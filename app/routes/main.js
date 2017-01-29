@@ -7,7 +7,18 @@ module.exports = function (app, appEnv) {
 
   app.route('/')
       .get(function (req, res) {
-          res.render(appEnv.path + '/app/views/index.pug', {user:req.user});
+        let out = {
+          user: req.user,
+          polls: [{
+            id: "dsfas",
+            title: "poll1"
+          },
+          {
+            id: "adsfs34sd",
+            title: "poll2"    
+          }]
+        }
+        res.render(appEnv.path + '/app/views/index.pug', out);
       });
 
 }

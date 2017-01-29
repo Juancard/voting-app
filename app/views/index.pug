@@ -28,27 +28,42 @@ html(lang='en')
           // Collect the nav links, forms, and other content for toggling
           #bs-example-navbar-collapse-1.collapse.navbar-collapse
             ul.nav.navbar-nav.navbar-right
-              li
+              li.active
                 a(href='/') Home
-              li
-                p.navbar-btn
-                  a.btn(class=(user)? "btn-danger" : "btn-info")(href=(user)? '/logout' : 'auth/twitter')
-                    span.fa.fa-twitter
-                    if user
-                      |   Log out
-                    else
-                      |   Log in
+              if user
+                li
+                  a(href='mypolls') My Polls
+                li
+                  a(href='newpoll') New Poll
+                li.dropdown
+                  a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false')
+                    |   #{user.twitter.displayName}
+                    span.caret
+                  .dropdown-menu.navbar-btn
+                      a.btn.btn-block.btn-primary(href='/logout')
+                        span.fa.fa-twitter
+                        |   Sign out
+              else
+                li
+                  p.navbar-btn
+                    a.btn.btn-info(href='auth/twitter')
+                      span.fa.fa-twitter
+                      |   Sign in
           // /.navbar-collapse
         // /.container-fluid
       .jumbotron(align='center')
         h1 Voting App!
         p Below are polls hosted by our users.
-        p Select a poll to see the results and vote, or sign-in to make a new poll.
+        p Select a poll to see the results and vote,
+          if user
+            a(href="/newpoll")  or make a new poll!
+          else
+            |   or sign-in to make a new poll.
+
         .list-group
-          a.list-group-item(href='#') Dapibus ac facilisis in
-          a.list-group-item(href='#') Morbi leo risus
-          a.list-group-item(href='#') Porta ac consectetur ac
-          a.list-group-item(href='#') Vestibulum at eros
+          for poll in polls
+            a.list-group-item(href=poll.id) #{poll.title}
+
     // jQuery (necessary for Bootstrap's JavaScript plugins)
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js')
     // Include all compiled plugins (below), or include individual files as needed
