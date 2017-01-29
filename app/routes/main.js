@@ -7,7 +7,8 @@ module.exports = function (app, appEnv) {
 
   app.route('/')
       .get(function (req, res) {
-          res.sendFile(appEnv.path + '/public/index.html');
+          //res.sendFile(appEnv.path + '/public/index.html');
+          res.render(appEnv.path + '/app/views/index.pug', req.user);
       });
 
 }
