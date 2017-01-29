@@ -70,14 +70,13 @@ Next, open your browser and enter `http://localhost:8080/`. Congrats, you're up 
 
 ## Features
 
-| Features           | Standard  | Angular   | FCC       |
-|:---------          |:--------: |:--------: |:---------:|
-| MongoDB            | _Yes_     | _Yes_     | _Yes_     |
-| Express            | _Yes_     | _Yes_     | _Yes_     |
-| AngularJS (1.x)    | _No_      | _Yes_     | _No_      |
-| Node.js            | _Yes_     | _Yes_     | _Yes_     |
-| Passport           | _No_      | _No_      | _Yes_     |
-| Mongoose           | _No_      | _No_      | _Yes_     |
+| Features           | Voting-app|
+|:---------          |:--------: |
+| MongoDB            | _Yes_     |
+| Express            | _Yes_     |
+| Node.js            | _Yes_     |
+| Passport           | _Yes_     |
+| Mongoose           | _Yes_     |
 
 ## License
 
