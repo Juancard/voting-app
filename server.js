@@ -5,6 +5,10 @@ var routes = require('./app/routes/index.js');
 var mongoose = require('mongoose');
 var passport = require('passport');
 var session = require('express-session');
+var logger = require("morgan");
+var cookieParser = require('cookie-parser');
+var bodyParser   = require('body-parser');
+var flash = require('connect-flash');
 
 var app = express();
 require('dotenv').load();
@@ -18,7 +22,7 @@ app.use('/public', express.static(process.cwd() + '/public'));
 app.use('/common', express.static(process.cwd() + '/app/common'));
 
 app.use(session({
-	secret: 'secretClementine',
+	secret: 'secretVotingApp',
 	resave: false,
 	saveUninitialized: true
 }));
@@ -26,7 +30,25 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-routes(app, passport);
+//http headers on console
+app.use(logger("dev")); // probar tambien con "combined"
+app.use(flash()); // use connect-flash for flash messages stored in session
+app.use(cookieParser());
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+}));
+
+// Data to send to Routes files
+var appEnv = {
+  path: process.cwd(),
+  middleware: {
+    isLoggedIn: require("./middleware/isLoggedIn.js")
+  },
+  passport: passport
+}
+
+routes(app, appEnv);
 
 var port = process.env.PORT || 8080;
 app.listen(port,  function () {
