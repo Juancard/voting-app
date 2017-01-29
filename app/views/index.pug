@@ -31,9 +31,13 @@ html(lang='en')
               li
                 a(href='/') Home
               li
-                button.btn.navbar-btn.btn-info
-                  span.fa.fa-twitter
-                  |  Sign in
+                p.navbar-btn
+                  a.btn(class=(user)? "btn-danger" : "btn-info")(href=(user)? '/logout' : 'auth/twitter')
+                    span.fa.fa-twitter
+                    if user
+                      |   Log out
+                    else
+                      |   Log in
           // /.navbar-collapse
         // /.container-fluid
       .jumbotron(align='center')
