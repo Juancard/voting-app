@@ -18,4 +18,14 @@ module.exports = function (app, appEnv) {
         res.render(appEnv.path + '/app/views/index.pug', out);
       });
 
+  app.route('/polls/newpoll')
+      .get(appEnv.middleware.isLoggedIn, function (req, res) {
+        let out = {
+          user: req.user
+        }
+        res.render(appEnv.path + '/app/views/newpoll.pug', out);
+      })
+      .post(appEnv.middleware.isLoggedIn, function (req, res) {
+        console.log(req.body);
+      });
 }

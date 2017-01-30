@@ -1,0 +1,19 @@
+extends skeleton.pug
+
+block content
+  .jumbotron()
+    h1 Make a new poll!
+    <form>
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" class="form-control" name="title" placeholder="My poll title" tabindex=1>
+      </div>
+      <div class="form-group">
+        <label for="options">Options (seperated by line):</label>
+        <textarea rows=5 class="form-control" name="options" placeholder="" tabindex=2></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Make!</button>
+    </form>
+
+block append js
+  script(src='/controllers/newpoll.client.js')
