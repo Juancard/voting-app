@@ -16,7 +16,7 @@ Here are the specific user stories implemented:
 
 ### Prerequisites
 
-In order to use Clementine.js, you must have the following installed:
+In order to use Voting-app, you must have the following installed:
 
 - [Node.js](https://nodejs.org/)
 - [NPM](https://nodejs.org/)
@@ -38,7 +38,7 @@ $ cd your-project
 $ npm install
 ```
 
-This will install the Clementine.js components into the `your-project` directory.
+This will install the Voting-app components into the `your-project` directory.
 
 ### Setup Twitter Authentication
 
