@@ -1,0 +1,19 @@
+extends skeleton.pug
+
+block content
+  .jumbotron(align='center')
+    h1 Voting App!
+    p Below are polls
+      if (pollsOwner)
+        |   you own.
+      else
+        |   hosted by our users.
+    p Select a poll to see the results and vote,
+      if user
+        a(href="/polls/newpoll")  or make a new poll!
+      else
+        |   or sign-in to make a new poll.
+
+    .list-group
+      for poll in polls
+        a.list-group-item(href=poll.id) #{poll.title}
