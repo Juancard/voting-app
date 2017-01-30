@@ -3,12 +3,13 @@
 var Poll = require('../models/polls.js');
 
 function pollHandler () {
-	this.getPolls = function (req, res) {
+
+	this.getPolls = function (callback) {
 	    Poll
 	        .find({})
 	        .exec(function (err, result) {
-	                if (err) { throw err; }
-                  res.json(result);
+	                if (err) callback(err);
+                  callback(err, result);
 	            });
 	};
 

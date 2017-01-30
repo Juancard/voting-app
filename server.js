@@ -16,9 +16,6 @@ require('./app/config/passport')(passport);
 mongoose.connect(process.env.MONGO_URI);
 mongoose.Promise = global.Promise;
 
-app.set('views', '/app/views');
-app.set('view engine', 'pug');
-
 app.use('/controllers', express.static(process.cwd() + '/app/controllers'));
 app.use('/public', express.static(process.cwd() + '/public'));
 app.use('/common', express.static(process.cwd() + '/app/common'));
@@ -40,6 +37,14 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
+
+app.set('views', '/app/views');
+app.set('view engine', 'pug');
+// req.user in all templates
+app.use(function(req, res, next) {
+  res.locals.user = req.user;
+  next();
+});
 
 // Data to send to Routes files
 var appEnv = {
