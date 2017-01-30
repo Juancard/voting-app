@@ -15,10 +15,11 @@ module.exports = function (app, appEnv) {
           },
           {
             id: "adsfs34sd",
-            title: "poll2"    
-          }]
+            title: "poll2"
+          }],
+          pollsOwner: false
         }
-        res.render(appEnv.path + '/app/views/index.pug', out);
+        res.render(appEnv.path + '/app/views/polls.pug', out);
       });
 
 }

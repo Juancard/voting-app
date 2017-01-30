@@ -13,9 +13,10 @@ module.exports = function (app, appEnv) {
           {
             id: "w12121fs34sd",
             title: "mypoll2"
-          }]
+          }],
+          pollsOwner: true
         }
-        res.render(appEnv.path + '/app/views/index.pug', out);
+        res.render(appEnv.path + '/app/views/polls.pug', out);
       });
 
   app.route('/polls/newpoll')
