@@ -9,7 +9,7 @@ html(lang='en')
     title Voting App!
     link(href='/public/css/main.css', rel='stylesheet', type='text/css')
     // BOOTSTRAP
-    link(href='public/bootstrap/css/bootstrap.min.css', rel='stylesheet')
+    link(href='/public/bootstrap/css/bootstrap.min.css', rel='stylesheet')
     link(rel='stylesheet', href='//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css')
     // load fontawesome
     // END BOOTSTRAP
@@ -32,9 +32,9 @@ html(lang='en')
                 a(href='/') Home
               if user
                 li
-                  a(href='mypolls') My Polls
+                  a(href='/polls/mypolls') My Polls
                 li
-                  a(href='newpoll') New Poll
+                  a(href='/polls/newpoll') New Poll
                 li.dropdown
                   a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false')
                     |   #{user.twitter.displayName}
@@ -46,7 +46,7 @@ html(lang='en')
               else
                 li
                   p.navbar-btn
-                    a.btn.btn-info(href='auth/twitter')
+                    a.btn.btn-info(href='/auth/twitter')
                       span.fa.fa-twitter
                       |   Sign in
           // /.navbar-collapse
@@ -56,7 +56,7 @@ html(lang='en')
         p Below are polls hosted by our users.
         p Select a poll to see the results and vote,
           if user
-            a(href="/newpoll")  or make a new poll!
+            a(href="/polls/newpoll")  or make a new poll!
           else
             |   or sign-in to make a new poll.
 
@@ -67,5 +67,5 @@ html(lang='en')
     // jQuery (necessary for Bootstrap's JavaScript plugins)
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js')
     // Include all compiled plugins (below), or include individual files as needed
-    script(src='public/bootstrap/js/bootstrap.min.js')
-    script(type='text/javascript', src='common/ajax-functions.js')
+    script(src='/public/bootstrap/js/bootstrap.min.js')
+    script(type='text/javascript', src='/common/ajax-functions.js')

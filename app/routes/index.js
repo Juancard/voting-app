@@ -10,5 +10,6 @@ module.exports = function (app, appEnv) {
 	require("./main.js")(app, appEnv);
 	require("./auth.js")(app, appEnv);
 	require("./user.js")(app, appEnv);
+	require("./polls.js")(app, appEnv);
 
 };
