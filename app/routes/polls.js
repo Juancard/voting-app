@@ -38,12 +38,17 @@ module.exports = function (app, appEnv) {
 
   app.route('/polls/:id([a-fA-F0-9]{24})')
       .get(function (req, res) {
-        pollHandler.getPollById(req.params.id, function(err, poll){
-          if (err) throw err;
-          poll = poll.toObject();
-          poll.options = poll.options.map(o => JSON.parse(JSON.stringify(o)));
-          let out = {poll}
-          res.render(appEnv.path + '/app/views/poll.pug', out);
+          res.render(appEnv.path + '/app/views/poll.pug', {pollId: req.params.id});
         });
-      });
+
+  app.route('/api/polls/:id([a-fA-F0-9]{24})')
+    .get(function(req, res){
+      pollHandler.getPollById(req.params.id, function(err, poll){
+        if (err) throw err;
+        poll = poll.toObject();
+        poll.options = poll.options.map(o => JSON.parse(JSON.stringify(o)));
+        res.json(poll);
+    });
+  });
+
 }

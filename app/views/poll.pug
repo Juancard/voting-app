@@ -1,17 +1,15 @@
 extends skeleton.pug
 
 block content
+  input#pollId(hidden, value=pollId)
   .jumbotron.row
 
     .col-md-4
-      h2 #{poll.title}
+      h2#pollTitle
       form
         .form-group
           label(for='options') I'd like to vote for...:
-          select.form-control(name='options', placeholder='Choose an option', tabindex='1', autofocus, required)
-            for op in poll.options
-              option(value=op._id) #{op.displayName}
-            option(value="custom") I'll make my own option
+          select#selectPollOptions.form-control(name='options', tabindex='1', autofocus, required)
         button.btn.btn-primary.btn-block(type='submit', tabindex='2')
           span.glyphicon.glyphicon-send
           |  Vote
@@ -20,8 +18,8 @@ block content
         span.fa.fa-twitter
         |  Share
 
-    .col-md-8
-      canvas#myChart(width="400" height="400")
+    .col-md-offset-1.col-md-6
+      canvas#myChart
       br
       button.btn.btn-block.btn-danger
         span.glyphicon.glyphicon-remove
