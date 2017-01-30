@@ -29,6 +29,15 @@ function pollHandler () {
       res.json(result);
     });
   };
+
+  this.getPollsByUserId = function(userId, callback){
+    Poll
+        .find({userId})
+        .exec(function (err, result) {
+                if (err) callback(err);
+                callback(err, result);
+            });
+  }
 /*
 	this.removePoll = function (req, res) {
 	    Poll

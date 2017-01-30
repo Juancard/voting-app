@@ -21,18 +21,13 @@ module.exports = function (app, appEnv) {
 
   app.route('/polls/mypolls')
       .get(appEnv.middleware.isLoggedIn, function (req, res) {
-        let out = {
-          polls: [{
-            id: "ds232fas",
-            title: "mypoll1"
-          },
-          {
-            id: "w12121fs34sd",
-            title: "mypoll2"
-          }],
-          pollsOwner: true
-        }
-        res.render(appEnv.path + '/app/views/polls.pug', out);
+        pollHandler.getPollsByUserId(req.user._id, function(err, polls){
+          let out = {
+            pollsOwner: true,
+            polls
+          }
+          res.render(appEnv.path + '/app/views/polls.pug', out);
+        });
       });
 
   app.route('/polls/newpoll')
