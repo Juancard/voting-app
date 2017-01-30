@@ -2,6 +2,9 @@
 
 module.exports = function (app, appEnv) {
 
+  var PollHandler = require(appEnv.path + "/app/controllers/pollHandler.server.js");
+  var pollHandler = new PollHandler();
+
   app.route('/polls/mypolls')
       .get(appEnv.middleware.isLoggedIn, function (req, res) {
         let out = {
@@ -26,7 +29,5 @@ module.exports = function (app, appEnv) {
         }
         res.render(appEnv.path + '/app/views/newpoll.pug', out);
       })
-      .post(function (req, res) {
-        res.json(req.body);
-      });
+      .post(appEnv.middleware.isLoggedIn, pollHandler.addPoll);
 }
