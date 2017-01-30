@@ -1,0 +1,10 @@
+extends skeleton.pug
+
+block content
+  .jumbotron(align='center')
+    h2 #{poll.title}
+    p options:
+
+  .list-group
+    for op in poll.options
+      li.list-group-item #{op.displayName} - #{op.votes}

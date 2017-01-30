@@ -32,10 +32,17 @@ module.exports = function (app, appEnv) {
 
   app.route('/polls/newpoll')
       .get(appEnv.middleware.isLoggedIn, function (req, res) {
-        let out = {
-          user: req.user
-        }
-        res.render(appEnv.path + '/app/views/newpoll.pug', out);
+        res.render(appEnv.path + '/app/views/newpoll.pug');
       })
       .post(appEnv.middleware.isLoggedIn, pollHandler.addPoll);
+
+  app.route('/polls/:id')
+      .get(function (req, res) {
+        pollHandler.getPollById(req.params.id, function(err, poll){
+          poll = poll.toObject();
+          poll.options = poll.options.map(o => JSON.parse(JSON.stringify(o)));
+          let out = {poll}
+          res.render(appEnv.path + '/app/views/poll.pug', out);
+        });
+      });
 }

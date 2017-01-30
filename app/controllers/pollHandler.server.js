@@ -20,7 +20,7 @@ function pollHandler () {
     newPoll.options = [];
     for (let op in req.body.options){
       newPoll.options.push({
-        displayName: op,
+        displayName: req.body.options[op],
         votes: 0
       });
     }
@@ -35,6 +35,15 @@ function pollHandler () {
         .find({userId})
         .exec(function (err, result) {
                 if (err) callback(err);
+                callback(err, result);
+            });
+  }
+  this.getPollById = function(id, callback){
+    Poll
+        .findById(id)
+        .exec(function (err, result) {
+                if (err) callback(err);
+
                 callback(err, result);
             });
   }
