@@ -35,7 +35,7 @@ function pollHandler () {
         .find({userId})
         .exec(function (err, result) {
                 if (err) callback(err);
-                callback(err, result);
+                callback(false, result);
             });
   }
   this.getPollById = function(id, callback){
@@ -43,8 +43,7 @@ function pollHandler () {
         .findById(id)
         .exec(function (err, result) {
                 if (err) callback(err);
-
-                callback(err, result);
+                callback(false, result);
             });
   }
 /*

@@ -21,8 +21,12 @@ block content
         |  Share
 
     .col-md-8
-      img.img-responsive(src="http://www.w3schools.com/bootstrap/cinqueterre.jpg", alt="Cinque Terre")
+      canvas#myChart(width="400" height="400")
       br
       button.btn.btn-block.btn-danger
         span.glyphicon.glyphicon-remove
         |  Remove poll
+
+block append js
+  script(src='/public/js/Chart.js')
+  script(src='/controllers/poll.client.js')

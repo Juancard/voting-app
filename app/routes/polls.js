@@ -36,9 +36,10 @@ module.exports = function (app, appEnv) {
       })
       .post(appEnv.middleware.isLoggedIn, pollHandler.addPoll);
 
-  app.route('/polls/:id')
+  app.route('/polls/:id([a-fA-F0-9]{24})')
       .get(function (req, res) {
         pollHandler.getPollById(req.params.id, function(err, poll){
+          if (err) throw err;
           poll = poll.toObject();
           poll.options = poll.options.map(o => JSON.parse(JSON.stringify(o)));
           let out = {poll}
