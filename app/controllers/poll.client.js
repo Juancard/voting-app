@@ -13,7 +13,12 @@
   let inputCustomOption = document.getElementsByName('customOption')[0];
 
   let chartContext = document.getElementById("myChart").getContext("2d");
-  let myChart;
+  let myChart = commonChart.getEmptyChart(chartContext, 'doughnut');
+
+  ajaxFunctions.ready(function(){
+    let url = apiUrl + "/" + hiddenInputPollId.value;
+    ajaxFunctions.ajaxRequest("GET", url, false, loadData);
+  });
 
   let loadData = (data) => {
     data = JSON.parse(data);
@@ -31,20 +36,34 @@
     // Load select element with poll options
     loadSelectOptions(data.poll.options);
 
-    // Load chart using Chart.js
-    if (!myChart) {
-      myChart = makeChart(data.poll.options)
-    } else {
-      myChart.data.datasets[0].data = data.poll.options.reduce((newVotes, oldData) => {
-        newVotes.push(oldData.votes);
-        return newVotes;
-      }, []);
-      myChart.data.labels = data.poll.options.reduce((newLabels, oldData) => {
-        newLabels.push(oldData.displayName);
-        return newLabels;
-      }, []);
-      myChart.update();
-    }
+    // Load pie chart with data from server
+    loadChart(myChart, data.poll.options);
+  }
+
+  function loadSelectOptions(pollOptions){
+      // clear select
+      selectPollOptions.innerHTML = '';
+
+      // poll options
+      pollOptions.forEach(
+        o => selectPollOptions.appendChild(createOption(o.displayName, o.displayName))
+      );
+      // user's custom option
+      selectPollOptions.appendChild(opAddCustomOption);
+  }
+
+  function loadChart(chart, options){
+    let chartLabels = options.reduce((newLabels, oldData) => {
+      newLabels.push(oldData.displayName);
+      return newLabels;
+    }, []);
+
+    let chartValues = options.reduce((newVotes, oldData) => {
+      newVotes.push(oldData.votes);
+      return newVotes;
+    }, []);
+
+    commonChart.addData(chart, chartLabels, chartValues);
   }
 
   let isValidPollOption = (pollOption) => {
@@ -90,69 +109,6 @@
         inputCustomOption.required = false;
     }
   });
-
-  function loadSelectOptions(pollOptions){
-      // clear select
-      selectPollOptions.innerHTML = '';
-
-      // poll options
-      pollOptions.forEach(
-        o => selectPollOptions.appendChild(createOption(o.displayName, o.displayName))
-      );
-      // user's custom option
-      selectPollOptions.appendChild(opAddCustomOption);
-  }
-
-
-  function makeChart(pollOptions) {
-    let chartColors = [
-      'rgb(255, 99, 132)',
-    	'rgb(255, 205, 86)',
-    	'rgb(75, 192, 192)',
-    	'rgb(54, 162, 235)',
-    	'rgb(153, 102, 255)',
-      'rgb(255, 159, 64)',
-      'rgb(231,233,237)'
-    ]
-
-    let labels = [];
-    let votes = [];
-    let colors = [];
-    for (let i = 0; i < pollOptions.length; i++){
-      labels[i] = pollOptions[i].displayName;
-      votes[i] = pollOptions[i].votes;
-      colors[i] = chartColors[i] || getRandomColor();
-    }
-    return new Chart(chartContext, {
-        type: 'doughnut',
-        data: {
-            labels,
-            datasets: [
-            {
-                data: votes,
-                backgroundColor: colors,
-                hoverBackgroundColor: colors,
-                borderWidth: 3
-            }]
-        },
-        options: {
-          responsive: true,
-          legend: {
-              position: 'bottom',
-          },
-          animation: {
-              animateScale: true,
-              animateRotate: true
-          }
-        }
-    });
-  }
-
-  ajaxFunctions.ready(function(){
-    let url = apiUrl + "/" + hiddenInputPollId.value;
-    ajaxFunctions.ajaxRequest("GET", url, false, loadData);
-  });
-
 
   ///////////////////////////////////////////
   ////////////// HELPER CLASSES /////////////

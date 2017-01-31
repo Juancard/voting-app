@@ -1,33 +1,34 @@
 extends skeleton.pug
 
 block content
-  input#pollId(hidden, value=pollId)
-  .jumbotron.row
+  .jumbotron
+    input#pollId(hidden, value=pollId)
+    .row
+      .col-md-4
+        h2#pollTitle
+        form
+          .form-group
+            label(for='options') I'd like to vote for...:
+            select#selectPollOptions.form-control(name='options', tabindex='1', autofocus, required)
+          .form-group#groupCustomOption(style="display:None")
+            label(for='customOption') My vote is:
+            input.form-control(type="text", name='customOption', tabindex='1', autofocus)
+          button.btn.btn-primary.btn-block(type='submit', tabindex='2')
+            span.glyphicon.glyphicon-send
+            |  Vote
+        br
+        button.btn.btn-info.btn-block(tabindex='3')
+          span.fa.fa-twitter
+          |  Share
 
-    .col-md-4
-      h2#pollTitle
-      form
-        .form-group
-          label(for='options') I'd like to vote for...:
-          select#selectPollOptions.form-control(name='options', tabindex='1', autofocus, required)
-        .form-group#groupCustomOption(style="display:None")
-          label(for='customOption') My vote is:
-          input.form-control(type="text", name='customOption', tabindex='1', autofocus)
-        button.btn.btn-primary.btn-block(type='submit', tabindex='2')
-          span.glyphicon.glyphicon-send
-          |  Vote
-      br
-      button.btn.btn-info.btn-block(tabindex='3')
-        span.fa.fa-twitter
-        |  Share
-
-    .col-md-offset-1.col-md-6
-      canvas#myChart
-      br
-      button.btn.btn-block.btn-danger
-        span.glyphicon.glyphicon-remove
-        |  Remove poll
+      .col-md-offset-1.col-md-6
+        canvas#myChart
+        br
+        button.btn.btn-block.btn-danger
+          span.glyphicon.glyphicon-remove
+          |  Remove poll
 
 block append js
   script(src='/public/js/Chart.js')
+  script(src='/common/myChart.js')
   script(src='/controllers/poll.client.js')
