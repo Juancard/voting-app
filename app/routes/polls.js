@@ -47,8 +47,25 @@ module.exports = function (app, appEnv) {
         if (err) throw err;
         poll = poll.toObject();
         poll.options = poll.options.map(o => JSON.parse(JSON.stringify(o)));
-        res.json(poll);
+        res.json({poll});
+      })
+    })
+    .post(function(req, res){
+      pollHandler.addVote(req.body.pollId, req.body.option, function(err, result){
+        if (err) {
+          res.json({
+            error: err,
+            message: "Error while adding vote to our database"
+          });
+        }
+        let poll = result.toObject();
+        poll.options = poll.options.map(o => JSON.parse(JSON.stringify(o)));
+        res.json({
+          error: false,
+          message: "Vote added!",
+          poll
+        });
+      });
     });
-  });
 
 }

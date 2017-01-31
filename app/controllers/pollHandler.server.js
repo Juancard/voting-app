@@ -46,6 +46,20 @@ function pollHandler () {
                 callback(false, result);
             });
   }
+	this.addVote = function(pollId, optionId, callback){
+		Poll
+				.findById(pollId)
+				.exec(function (err, poll) {
+								if (err) callback(err);
+								let optionVoted = poll.options.id(optionId);
+								optionVoted.votes++;
+								poll.save(function(err, result){
+									if (err) callback(err);
+									callback(false, result);
+								})
+
+						});
+	}
 /*
 	this.removePoll = function (req, res) {
 	    Poll

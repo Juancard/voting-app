@@ -37,7 +37,7 @@
        options: pollOptions
      }
 
-     ajaxFunctions.ajaxRequest("post", destUrl, data, afterPollSent);
+     ajaxFunctions.ajaxRequest("POST", destUrl, data, afterPollSent);
    }
 
    let onSubmitPoll = (event) => {

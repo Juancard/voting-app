@@ -1,20 +1,37 @@
 'use strict';
 
 (function () {
+  let apiUrl = appUrl + "/api/polls/"
+
   let h1Title = document.getElementById('pollTitle');
   let formNewVote = document.querySelector('form');
   let hiddenInputPollId = document.getElementById('pollId');
   let selectPollOptions = document.getElementById('selectPollOptions');
-  let chartContext = document.getElementById("myChart").getContext("2d");
   let opAddCustomOption = createOption("Add another option", "add");
   let groupCustomOption = document.getElementById("groupCustomOption");
   let inputCustomOption = document.getElementsByName('customOption')[0];
+
+  let chartContext = document.getElementById("myChart").getContext("2d");
+  let myChart;
 
   let isValidPollOption = (pollOption) => {
     if (!pollOption) {
       alert("Error: Poll option can not be empty");
       return false;
     } else return true;
+  }
+
+  let sendVote = (pollId, pollOption) => {
+    let vote = {
+      pollId,
+      option: pollOption
+    }
+    let callback = (data) => {
+      data = JSON.parse(data);
+      if (data.error) alert(data.message);
+      myChart = makeChart(data.poll.options);
+    }
+    ajaxFunctions.ajaxRequest("POST", apiUrl + pollId, vote, callback);
   }
 
   let onSubmitVote = (event) => {
@@ -27,7 +44,7 @@
       pollOption = selectedOp.value;
     }
     if (isValidPollOption(pollOption)) {
-      console.log("todo ok", pollOption, pollId.value);
+      sendVote(hiddenInputPollId.value, pollOption);
     }
   }
 
@@ -56,7 +73,7 @@
   }
 
 
-  var loadChart = pollOptions => {
+  var makeChart = pollOptions => {
     let chartColors = [
       'rgb(255, 99, 132)',
     	'rgb(255, 205, 86)',
@@ -75,14 +92,7 @@
       votes[i] = pollOptions[i].votes;
       colors[i] = chartColors[i] || getRandomColor();
     }
-    /*
-    var myPieChart = new Chart(chartContext, {
-        type: 'pie',
-        data: chartData,
-        //options: options
-    });
-    */
-    let myChart = new Chart(chartContext, {
+    return new Chart(chartContext, {
         type: 'doughnut',
         data: {
             labels,
@@ -108,22 +118,23 @@
   }
 
   var loadData = (data) => {
-    let poll = JSON.parse(data);
+    data = JSON.parse(data);
 
     // Load poll title
-    updateHtmlElement(poll, h1Title, "title");
+    updateHtmlElement(data.poll, h1Title, "title");
 
     // Load select element with poll options
-    loadSelectOptions(poll.options);
+    loadSelectOptions(data.poll.options);
 
     // Load chart using Chart.js
-    loadChart(poll.options);
+    myChart = makeChart(data.poll.options);
   }
 
   ajaxFunctions.ready(function(){
-    var apiUrl = appUrl + "/api/polls/" + hiddenInputPollId.value;
-    ajaxFunctions.ajaxRequest("GET", apiUrl, false, loadData);
+    let url = apiUrl  + hiddenInputPollId.value;
+    ajaxFunctions.ajaxRequest("GET", url, false, loadData);
   });
+
 
   ///////////////////////////////////////////
   ////////////// HELPER CLASSES /////////////
