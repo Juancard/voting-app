@@ -29,7 +29,11 @@
     let callback = (data) => {
       data = JSON.parse(data);
       if (data.error) alert(data.message);
-      myChart = makeChart(data.poll.options);
+      myChart.data.datasets[0].data = data.poll.options.reduce((newVotes, oldData) => {
+        newVotes.push(oldData.votes);
+        return newVotes;
+      }, []);
+      myChart.update();
     }
     ajaxFunctions.ajaxRequest("POST", apiUrl + pollId, vote, callback);
   }
