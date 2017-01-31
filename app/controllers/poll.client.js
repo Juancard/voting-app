@@ -1,7 +1,8 @@
 'use strict';
 
 (function () {
-  let apiUrl = appUrl + "/api/polls/"
+  let apiUrl = appUrl + "/api/polls";
+  let apiAddVote = apiUrl + "/add/vote";
 
   let h1Title = document.getElementById('pollTitle');
   let formNewVote = document.querySelector('form');
@@ -13,6 +14,38 @@
 
   let chartContext = document.getElementById("myChart").getContext("2d");
   let myChart;
+
+  let loadData = (data) => {
+    data = JSON.parse(data);
+
+    if (data.error) {
+      alert(data.message);
+      console.error(error);
+    } else if (data.message) {
+      alert(data.message);
+    }
+
+    // Load poll title
+    updateHtmlElement(data.poll, h1Title, "title");
+
+    // Load select element with poll options
+    loadSelectOptions(data.poll.options);
+
+    // Load chart using Chart.js
+    if (!myChart) {
+      myChart = makeChart(data.poll.options)
+    } else {
+      myChart.data.datasets[0].data = data.poll.options.reduce((newVotes, oldData) => {
+        newVotes.push(oldData.votes);
+        return newVotes;
+      }, []);
+      myChart.data.labels = data.poll.options.reduce((newLabels, oldData) => {
+        newLabels.push(oldData.displayName);
+        return newLabels;
+      }, []);
+      myChart.update();
+    }
+  }
 
   let isValidPollOption = (pollOption) => {
     if (!pollOption) {
@@ -26,16 +59,7 @@
       pollId,
       option: pollOption
     }
-    let callback = (data) => {
-      data = JSON.parse(data);
-      if (data.error) alert(data.message);
-      myChart.data.datasets[0].data = data.poll.options.reduce((newVotes, oldData) => {
-        newVotes.push(oldData.votes);
-        return newVotes;
-      }, []);
-      myChart.update();
-    }
-    ajaxFunctions.ajaxRequest("POST", apiUrl + pollId, vote, callback);
+    ajaxFunctions.ajaxRequest("POST", apiAddVote, vote, loadData);
   }
 
   let onSubmitVote = (event) => {
@@ -67,17 +91,20 @@
     }
   });
 
-  var loadSelectOptions = pollOptions => {
+  function loadSelectOptions(pollOptions){
+      // clear select
+      selectPollOptions.innerHTML = '';
+
       // poll options
       pollOptions.forEach(
-        o => selectPollOptions.appendChild(createOption(o.displayName, o._id))
+        o => selectPollOptions.appendChild(createOption(o.displayName, o.displayName))
       );
       // user's custom option
       selectPollOptions.appendChild(opAddCustomOption);
   }
 
 
-  var makeChart = pollOptions => {
+  function makeChart(pollOptions) {
     let chartColors = [
       'rgb(255, 99, 132)',
     	'rgb(255, 205, 86)',
@@ -121,21 +148,8 @@
     });
   }
 
-  var loadData = (data) => {
-    data = JSON.parse(data);
-
-    // Load poll title
-    updateHtmlElement(data.poll, h1Title, "title");
-
-    // Load select element with poll options
-    loadSelectOptions(data.poll.options);
-
-    // Load chart using Chart.js
-    myChart = makeChart(data.poll.options);
-  }
-
   ajaxFunctions.ready(function(){
-    let url = apiUrl  + hiddenInputPollId.value;
+    let url = apiUrl + "/" + hiddenInputPollId.value;
     ajaxFunctions.ajaxRequest("GET", url, false, loadData);
   });
 

@@ -49,7 +49,9 @@ module.exports = function (app, appEnv) {
         poll.options = poll.options.map(o => JSON.parse(JSON.stringify(o)));
         res.json({poll});
       })
-    })
+    });
+
+  app.route('/api/polls/add/vote')
     .post(function(req, res){
       pollHandler.addVote(req.body.pollId, req.body.option, function(err, result){
         if (err) {

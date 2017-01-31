@@ -46,13 +46,20 @@ function pollHandler () {
                 callback(false, result);
             });
   }
-	this.addVote = function(pollId, optionId, callback){
+	this.addVote = function(pollId, option, callback){
 		Poll
 				.findById(pollId)
 				.exec(function (err, poll) {
 								if (err) callback(err);
-								let optionVoted = poll.options.id(optionId);
-								optionVoted.votes++;
+								let optionVoted = poll.options.find(op => op.displayName == option);
+								if (!optionVoted) {
+									poll.options.push({
+										displayName: option,
+										votes: 1
+									});
+								} else {
+									optionVoted.votes++;
+								}
 								poll.save(function(err, result){
 									if (err) callback(err);
 									callback(false, result);
@@ -60,6 +67,7 @@ function pollHandler () {
 
 						});
 	}
+
 /*
 	this.removePoll = function (req, res) {
 	    Poll
