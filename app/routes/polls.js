@@ -34,7 +34,20 @@ module.exports = function (app, appEnv) {
       .get(appEnv.middleware.isLoggedIn, function (req, res) {
         res.render(appEnv.path + '/app/views/newpoll.pug');
       })
-      .post(appEnv.middleware.isLoggedIn, pollHandler.addPoll);
+      .post(appEnv.middleware.isLoggedIn, function(req, res){
+        pollHandler.addPoll(req.user, req.body, function(err, result){
+          let out = {}
+          if (err) {
+            out.error = error;
+            out.message = "Error: on creating poll. Please, try Later.";
+          } else {
+            out.message = "Poll created!";
+            out.redirect = "/polls/" + result._id;
+            out.poll = result;
+          }
+          res.json(out)
+        });
+      });
 
   app.route('/polls/:id([a-fA-F0-9]{24})')
       .get(function (req, res) {

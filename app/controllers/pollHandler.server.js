@@ -13,20 +13,20 @@ function pollHandler () {
 	            });
 	};
 
-  this.addPoll = function (req, res) {
+  this.addPoll = function (user, poll, callback) {
     var newPoll = new Poll();
-    newPoll.userId = req.user._id;
-    newPoll.title = req.body.title;
+    newPoll.userId = user._id;
+    newPoll.title = poll.title;
     newPoll.options = [];
-    for (let op in req.body.options){
+    for (let op in poll.options){
       newPoll.options.push({
-        displayName: req.body.options[op],
+        displayName: poll.options[op],
         votes: 0
       });
     }
     newPoll.save(function(err, result){
-      if (err) throw err;
-      res.json(result);
+      if (err) return callback(err);
+      return callback(false, result);
     });
   };
 

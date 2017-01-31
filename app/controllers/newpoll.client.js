@@ -5,7 +5,9 @@
    let form = document.querySelector('form');
    let inputPollTitle = document.getElementsByName('title')[0];
    let textAreaPollOptions = document.getElementsByName('options')[0];
-   let destUrl = appUrl + "/polls/newpoll";
+
+   let urlAddPoll = appUrl + "/polls/newpoll";
+   let urlShowNewPoll = appUrl + "/polls" // Id added dynamically
 
    let isValidPollTitle = (title) => {
      if (!title) {
@@ -28,8 +30,12 @@
 
      let afterPollSent = (response) => {
        let data = JSON.parse(response);
-       console.log(data);
-       alert("Respuesta Correcta!");
+       if (data.error) {
+         alert(data.message);
+       } else {
+         if (data.message) alert(data.message);
+         if (data.redirect) window.location.href = data.redirect;
+       }
      }
 
      let data = {
@@ -37,7 +43,7 @@
        options: pollOptions
      }
 
-     ajaxFunctions.ajaxRequest("POST", destUrl, data, afterPollSent);
+     ajaxFunctions.ajaxRequest("POST", urlAddPoll, data, afterPollSent);
    }
 
    let onSubmitPoll = (event) => {
@@ -45,7 +51,7 @@
      let pollTitle = inputPollTitle.value;
      let pollOptions = textAreaPollOptions.value;
      if (isValidPollTitle(pollTitle) && areValidPollOptions(pollOptions)) {
-       sendPoll(pollTitle, pollOptions.split("\n"));
+       sendPoll(pollTitle, pollOptions.split("\n").filter(o => o != ""));
      }
    }
 
