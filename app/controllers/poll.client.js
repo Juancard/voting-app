@@ -5,6 +5,8 @@
   let hiddenInputPollId = document.getElementById('pollId');
   let selectPollOptions = document.getElementById('selectPollOptions');
   let chartContext = document.getElementById("myChart").getContext("2d");
+  let opAddCustomOption = createOption("Add another option", "add");
+  let groupCustomOption = document.getElementById("groupCustomOption");
 
   function updateHtmlElement(data, element, property){
       element.innerHTML = data[property];
@@ -18,11 +20,29 @@
     return x;
   }
 
-  var loadSelectOptions = pollOptions => pollOptions.forEach(
-    o => selectPollOptions.appendChild(
-      createOption(o.displayName, o._id)
-    )
-  );
+  selectPollOptions.addEventListener("change", function(event){
+    let selectedIndex = selectPollOptions.selectedIndex;
+    let selectedOp = selectPollOptions.options[selectedIndex];
+    if (selectedOp.value == opAddCustomOption.value){
+      if (groupCustomOption.style.display === "none"){
+        groupCustomOption.style.display = "";
+      }
+    } else if (groupCustomOption.style.display === ""){
+        groupCustomOption.style.display = "none";
+    }    
+  });
+
+  var loadSelectOptions = pollOptions => {
+
+      // poll options
+      pollOptions.forEach(
+        o => selectPollOptions.appendChild(createOption(o.displayName, o._id))
+      );
+
+      // user's custom option
+      selectPollOptions.appendChild(opAddCustomOption);
+  }
+
 
   var loadChart = pollOptions => {
     let chartColors = [
