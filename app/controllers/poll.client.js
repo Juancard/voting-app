@@ -2,43 +2,55 @@
 
 (function () {
   let h1Title = document.getElementById('pollTitle');
+  let formNewVote = document.querySelector('form');
   let hiddenInputPollId = document.getElementById('pollId');
   let selectPollOptions = document.getElementById('selectPollOptions');
   let chartContext = document.getElementById("myChart").getContext("2d");
   let opAddCustomOption = createOption("Add another option", "add");
   let groupCustomOption = document.getElementById("groupCustomOption");
+  let inputCustomOption = document.getElementsByName('customOption')[0];
 
-  function updateHtmlElement(data, element, property){
-      element.innerHTML = data[property];
+  let isValidPollOption = (pollOption) => {
+    if (!pollOption) {
+      alert("Error: Poll option can not be empty");
+      return false;
+    } else return true;
   }
 
-  function createOption(text, value){
-    var x = document.createElement("OPTION");
-    x.setAttribute("value", value);
-    var t = document.createTextNode(text);
-    x.appendChild(t);
-    return x;
+  let onSubmitVote = (event) => {
+    event.preventDefault(); // por default manda form derecho al server el muy negro
+    let selectedOp = getSelectedOption(selectPollOptions);
+    let pollOption;
+    if (isSameOption(selectedOp, opAddCustomOption)){
+      pollOption = inputCustomOption.value;
+    } else {
+      pollOption = selectedOp.value;
+    }
+    if (isValidPollOption(pollOption)) {
+      console.log("todo ok", pollOption, pollId.value);
+    }
   }
+
+  formNewVote.addEventListener("submit", onSubmitVote);
 
   selectPollOptions.addEventListener("change", function(event){
-    let selectedIndex = selectPollOptions.selectedIndex;
-    let selectedOp = selectPollOptions.options[selectedIndex];
-    if (selectedOp.value == opAddCustomOption.value){
+    let selectedOp = getSelectedOption(selectPollOptions);
+    if (isSameOption(selectedOp, opAddCustomOption)){
       if (groupCustomOption.style.display === "none"){
-        groupCustomOption.style.display = "";
+        groupCustomOption.style.display = ""; // show
+        inputCustomOption.required = true;
       }
     } else if (groupCustomOption.style.display === ""){
-        groupCustomOption.style.display = "none";
-    }    
+        groupCustomOption.style.display = "none"; // hide
+        inputCustomOption.required = false;
+    }
   });
 
   var loadSelectOptions = pollOptions => {
-
       // poll options
       pollOptions.forEach(
         o => selectPollOptions.appendChild(createOption(o.displayName, o._id))
       );
-
       // user's custom option
       selectPollOptions.appendChild(opAddCustomOption);
   }
@@ -93,15 +105,6 @@
           }
         }
     });
-
-    function getRandomColor() {
-      var letters = '0123456789ABCDEF'.split('');
-      var color = '#';
-      for (var i = 0; i < 6; i++ ) {
-          color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
-    }
   }
 
   var loadData = (data) => {
@@ -116,8 +119,43 @@
     // Load chart using Chart.js
     loadChart(poll.options);
   }
+
   ajaxFunctions.ready(function(){
     var apiUrl = appUrl + "/api/polls/" + hiddenInputPollId.value;
     ajaxFunctions.ajaxRequest("GET", apiUrl, false, loadData);
   });
+
+  ///////////////////////////////////////////
+  ////////////// HELPER CLASSES /////////////
+  ///////////////////////////////////////////
+
+  function updateHtmlElement(data, element, property){
+      element.innerHTML = data[property];
+  }
+
+  function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  function createOption(text, value){
+    var x = document.createElement("OPTION");
+    x.setAttribute("value", value);
+    var t = document.createTextNode(text);
+    x.appendChild(t);
+    return x;
+  }
+
+  function getSelectedOption(selectElement){
+    let selectedIndex = selectElement.selectedIndex;
+    return selectElement.options[selectedIndex];
+  }
+
+  function isSameOption(op1, op2){
+    return op1.value == op2.value;
+  }
 })();
