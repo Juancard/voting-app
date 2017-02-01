@@ -5,13 +5,11 @@ var Schema = mongoose.Schema;
 
 
 var Poll = new Schema({
-  userId: {type: Schema.Types.ObjectId, ref: 'User'},
+  author: {type: Schema.Types.ObjectId, ref: 'User'},
+  creationDate: Date,
   title: String,
   active: Boolean,
-  options: [{
-    displayName: String,
-    votes: Number
-  }]
+  options: [{type: Schema.Types.ObjectId, ref: 'PollOption'}]
 });
 
 module.exports = mongoose.model('Poll', Poll);

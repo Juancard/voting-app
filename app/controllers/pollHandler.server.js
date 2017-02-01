@@ -1,12 +1,17 @@
 'use strict';
 
 var Poll = require('../models/polls.js');
+var PollOption = require('../models/pollOptions.js');
+var Vote = require('../models/votes.js');
 
 function pollHandler () {
 
 	this.getPolls = function (callback) {
 	    Poll
 	        .find({active: true})
+					.populate("author")
+					.populate("options")
+					.populate("votes")
 	        .exec(function (err, result) {
 	                if (err) callback(err);
                   callback(err, result);
@@ -14,26 +19,48 @@ function pollHandler () {
 	};
 
   this.addPoll = function (user, poll, callback) {
-    var newPoll = new Poll();
-    newPoll.userId = user._id;
+		// Date to use many times
+		let now = new Date();
+
+		// Populate Poll Object
+    let newPoll = new Poll();
+    newPoll.author = user._id;
     newPoll.title = poll.title;
 		newPoll.active = true;
-    newPoll.options = [];
+		newPoll.creationDate = now;
+
+		// Populate Poll Options
+		let allPollOptionsCreated = [];
     for (let op in poll.options){
-      newPoll.options.push({
-        displayName: poll.options[op],
-        votes: 0
-      });
+			let newPollOption = new PollOption();
+
+			newPollOption.author = user._id;
+			newPollOption.creationDate = now;
+			newPollOption.displayName =  poll.options[op];
+			newPollOption.poll = newPoll._id;
+
+      newPoll.options.push(newPollOption._id);
+			allPollOptionsCreated.push(newPollOption);
     }
-    newPoll.save(function(err, result){
-      if (err) return callback(err);
-      return callback(false, result);
-    });
+
+		// Save Poll Options
+		PollOption.insertMany(allPollOptionsCreated, (err, result) => {
+			if (err) return callback(err);
+
+			// Save Poll
+			newPoll.save(function(err, result){
+				if (err) return callback(err);
+				return callback(false, result);
+			});
+		})
   };
 
   this.getPollsByUserId = function(userId, callback){
     Poll
         .find({userId, active: true})
+				.populate("author")
+				.populate("options")
+				.populate("votes")
         .exec(function (err, result) {
                 if (err) callback(err);
                 callback(false, result);
@@ -42,6 +69,9 @@ function pollHandler () {
   this.getPollById = function(id, callback){
     Poll
         .findOne({_id: id, active:true})
+				.populate("author")
+				.populate("options")
+				.populate("votes")
         .exec(function (err, result) {
                 if (err) callback(err);
                 callback(false, result);

@@ -9,7 +9,6 @@ module.exports = function (app, appEnv) {
 
   app.route('*')
     .get(function(req, res){
-      console.log("hola");
       res.render(appEnv.path + '/app/views/404.pug');
     });
 

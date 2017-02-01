@@ -65,8 +65,8 @@ module.exports = function (app, appEnv) {
         if (!poll){
           res.redirect('*');
         }
-        poll = poll.toObject();
-        poll.options = poll.options.map(o => JSON.parse(JSON.stringify(o)));
+        //poll = poll.toObject();
+        //poll.options = poll.options.map(o => JSON.parse(JSON.stringify(o)));
         res.json({poll});
       })
     })
