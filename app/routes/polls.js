@@ -39,9 +39,9 @@ module.exports = function (app, appEnv) {
           let out = {}
           if (err) {
             out.error = error;
-            out.message = "Error: on creating poll. Please, try Later.";
+            out.message = "Error: on creating poll. Please, try again later.";
           } else {
-            out.message = "Poll created!";
+            out.message = "Your new poll was created!";
             out.redirect = "/polls/" + result._id;
             out.poll = result;
           }
@@ -51,17 +51,40 @@ module.exports = function (app, appEnv) {
 
   app.route('/polls/:id([a-fA-F0-9]{24})')
       .get(function (req, res) {
-          res.render(appEnv.path + '/app/views/poll.pug', {pollId: req.params.id});
-        });
+        pollHandler.getPollById(req.params.id, function(err, result){
+          if (err) throw err;
+          if (!result) res.redirect('*');
+          res.render(appEnv.path + '/app/views/poll.pug', {poll: result});
+        })
+      });
 
   app.route('/api/polls/:id([a-fA-F0-9]{24})')
     .get(function(req, res){
       pollHandler.getPollById(req.params.id, function(err, poll){
         if (err) throw err;
+        if (!poll){
+          res.redirect('*');
+        }
         poll = poll.toObject();
         poll.options = poll.options.map(o => JSON.parse(JSON.stringify(o)));
         res.json({poll});
       })
+    })
+    .delete(function(req, res) {
+      pollHandler.removePoll(req.params.id, req.user._id, function(err, result){
+        let out = {}
+        if (err) {
+          out.error = error;
+          out.message = "Error: on deleting poll. Please, try again later.";
+        } else if (!result){
+          out.error = true;
+          out.message = "You are not allowed to remove this poll";
+        } else {
+          out.message = "Your poll was removed";
+          out.redirect = "/";
+        }
+        res.json(out)
+      });
     });
 
   app.route('/api/polls/add/vote')

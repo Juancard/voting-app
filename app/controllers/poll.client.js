@@ -4,8 +4,8 @@
   let apiUrl = appUrl + "/api/polls";
   let apiAddVote = apiUrl + "/add/vote";
 
-  let h1Title = document.getElementById('pollTitle');
   let formNewVote = document.querySelector('form');
+  let btnPollRemove = document.getElementById('btnPollRemove') || null;
   let hiddenInputPollId = document.getElementById('pollId');
   let selectPollOptions = document.getElementById('selectPollOptions');
   let opAddCustomOption = createOption("Add another option", "add");
@@ -29,9 +29,6 @@
     } else if (data.message) {
       alert(data.message);
     }
-
-    // Load poll title
-    updateHtmlElement(data.poll, h1Title, "title");
 
     // Load select element with poll options
     loadSelectOptions(data.poll.options);
@@ -97,6 +94,23 @@
 
   formNewVote.addEventListener("submit", onSubmitVote);
 
+  var onDeletePoll = () => {
+    let destUrl = apiUrl + "/" + hiddenInputPollId.value;
+    ajaxFunctions.ajaxRequest("DELETE", destUrl, null, (data) => {
+      data = JSON.parse(data);
+      if (data.error) {
+        alert(data.message || "Error en servidor");
+      } else {
+        alert(data.message || "Operación exitosa");
+      }
+      window.location.href = data.redirect || appUrl;
+    });
+  }
+
+  if (btnPollRemove){
+    btnPollRemove.addEventListener("click", onDeletePoll);
+  }
+
   selectPollOptions.addEventListener("change", function(event){
     let selectedOp = getSelectedOption(selectPollOptions);
     if (isSameOption(selectedOp, opAddCustomOption)){
@@ -113,19 +127,6 @@
   ///////////////////////////////////////////
   ////////////// HELPER CLASSES /////////////
   ///////////////////////////////////////////
-
-  function updateHtmlElement(data, element, property){
-      element.innerHTML = data[property];
-  }
-
-  function getRandomColor() {
-    var letters = '0123456789ABCDEF'.split('');
-    var color = '#';
-    for (var i = 0; i < 6; i++ ) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  }
 
   function createOption(text, value){
     var x = document.createElement("OPTION");

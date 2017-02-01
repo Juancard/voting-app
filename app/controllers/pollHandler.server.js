@@ -6,7 +6,7 @@ function pollHandler () {
 
 	this.getPolls = function (callback) {
 	    Poll
-	        .find({})
+	        .find({active: true})
 	        .exec(function (err, result) {
 	                if (err) callback(err);
                   callback(err, result);
@@ -17,6 +17,7 @@ function pollHandler () {
     var newPoll = new Poll();
     newPoll.userId = user._id;
     newPoll.title = poll.title;
+		newPoll.active = true;
     newPoll.options = [];
     for (let op in poll.options){
       newPoll.options.push({
@@ -32,7 +33,7 @@ function pollHandler () {
 
   this.getPollsByUserId = function(userId, callback){
     Poll
-        .find({userId})
+        .find({userId, active: true})
         .exec(function (err, result) {
                 if (err) callback(err);
                 callback(false, result);
@@ -40,7 +41,7 @@ function pollHandler () {
   }
   this.getPollById = function(id, callback){
     Poll
-        .findById(id)
+        .findOne({_id: id, active:true})
         .exec(function (err, result) {
                 if (err) callback(err);
                 callback(false, result);
@@ -66,21 +67,16 @@ function pollHandler () {
 								})
 
 						});
-	}
-
-/*
-	this.removePoll = function (req, res) {
+	},
+	this.removePoll = (pollId, userId, callback) => {
 	    Poll
-	        .findOneAndUpdate({'github.id': req.user.github.id}, { 'nbrClicks.clicks': 0 })
+	        .findOneAndUpdate({_id: pollId, userId: userId}, { active: false })
 	        .exec(function (err, result) {
-	                if (err) { throw err; }
-
-	                res.json(result.nbrClicks);
+	                if (err) callback(err);
+	                callback(false, result);
 	            }
 	        );
 	};
-*/
-
 }
 
 module.exports = pollHandler;
