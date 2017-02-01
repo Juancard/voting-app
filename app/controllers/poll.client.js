@@ -6,6 +6,8 @@
 
   let formNewVote = document.querySelector('form');
   let btnPollRemove = document.getElementById('btnPollRemove') || null;
+  let anchorShareTwitter = document.getElementById('anchorShareTwitter');
+
   let hiddenInputPollId = document.getElementById('pollId');
   let selectPollOptions = document.getElementById('selectPollOptions');
   let opAddCustomOption = createOption("Add another option", "add");
@@ -30,6 +32,9 @@
       alert(data.message);
     }
 
+    // Load twitter share button
+    loadAnchorTwitterShare(data.poll);
+
     // Load select element with poll options
     loadSelectOptions(data.poll.options);
 
@@ -47,6 +52,14 @@
       );
       // user's custom option
       selectPollOptions.appendChild(opAddCustomOption);
+  }
+
+  function loadAnchorTwitterShare(poll) {
+    let urlTwitter = "http://twitter.com/share" || "https://twitter.com/intent/tweet";
+    let urlToShare = window.location.href;
+    let text = poll.title;
+    let toMention = "JuanCruzCardona";
+    anchorShareTwitter.href = urlTwitter + "?url=" + urlToShare + "&text=" + text + "&via=" + toMention;
   }
 
   function loadChart(chart, options){
