@@ -5,7 +5,7 @@ block content
     input#pollId(hidden, value=pollId)
     .row
       .col-md-4
-        h2#pollTitle
+        h3#pollTitle
         form
           .form-group
             label(for='options') I'd like to vote for...:
@@ -21,8 +21,8 @@ block content
           span.fa.fa-twitter
           |  Share
 
-      .col-md-offset-1.col-md-6
-        canvas#myChart
+      .col-md-8
+        canvas#myChart(width="600", height="300")
         br
         button.btn.btn-block.btn-danger
           span.glyphicon.glyphicon-remove

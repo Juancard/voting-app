@@ -15,6 +15,7 @@ var commonChart = {
   getEmptyChart: (context, chartType) =>
     new Chart(context, {
         type: chartType,
+        backgroundColor: "#F5DEB3",
         data: {
             labels: [],
             datasets: [
