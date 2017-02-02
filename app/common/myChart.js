@@ -48,8 +48,26 @@ var commonChart = {
     givenChart.data.datasets[0].backgroundColor = colors;
     givenChart.data.datasets[0].hoverBackgroundColor = colors;
 
-
     givenChart.update();
+  },
+  addLabelValue: (givenChart, label, value) => {
+    let dataset = givenChart.data.datasets[0];
+    let allLabels = givenChart.data.labels;
+    let newColor = commonChart.chartColors[allLabels.length] || commonChart.getRandomColor()
+    allLabels.push(label);
+    dataset.data.push(value);
+    dataset.backgroundColor.push(newColor);
+    dataset.hoverBackgroundColor.push(newColor);
+    givenChart.update();
+  },
+  updateLabelValue: (givenChart, label, newValue) => {
+    let i = givenChart.data.labels.indexOf(label);
+    if (i != -1) {
+      givenChart.data.datasets[0].data[i] = newValue;
+      givenChart.update();
+      return true;
+    }
+    return false;
   },
   getRandomColor: () => {
     var letters = '0123456789ABCDEF'.split('');

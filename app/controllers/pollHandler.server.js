@@ -38,6 +38,7 @@ function pollHandler () {
 			newPollOption.creationDate = now;
 			newPollOption.displayName =  poll.options[op];
 			newPollOption.poll = newPoll._id;
+			newPollOption.state = "active";
 
       newPoll.options.push(newPollOption._id);
 			allPollOptionsCreated.push(newPollOption);
@@ -45,13 +46,18 @@ function pollHandler () {
 
 		// Save Poll Options
 		PollOption.insertMany(allPollOptionsCreated, (err, result) => {
-			if (err) return callback(err);
-
-			// Save Poll
-			newPoll.save(function(err, result){
-				if (err) return callback(err);
-				return callback(false, result);
-			});
+			if (err) {
+				return callback(err);
+			} else {
+				// Save Poll
+				newPoll.save(function(err, result){
+					if (err) {
+						return callback(err);
+					} else {
+						return callback(false, result);
+					}
+				});
+			}
 		})
   };
 
@@ -62,8 +68,11 @@ function pollHandler () {
 				.populate("options")
 				.populate("votes")
         .exec(function (err, result) {
-                if (err) callback(err);
-                callback(false, result);
+                if (err) {
+									callback(err);
+								} else {
+									callback(false, result);
+								}
             });
   }
   this.getPollById = function(id, callback){
@@ -73,30 +82,84 @@ function pollHandler () {
 				.populate("options")
 				.populate("votes")
         .exec(function (err, result) {
-                if (err) callback(err);
-                callback(false, result);
+                if (err) {
+									callback(err);
+								} else {
+									callback(false, result);
+								}
             });
   }
-	this.addVote = function(pollId, option, callback){
+	this.addVote = function(optionId, userId, callback){
+		PollOption
+				.findById(optionId)
+				.exec(function (err, pollOption) {
+								if (err) {
+									callback(err);
+								} else if (!pollOption) {
+									callback(true);
+								} else {
+									// Create and fill vote
+									let vote = new Vote();
+									vote.creationDate = new Date();
+									vote.voter = userId;
+									vote.pollOption = optionId;
+									vote.state = "active";
+
+									// Save vote
+									vote.save(function(err, vote){
+										if (err) callback(err);
+
+										// Add vote to option
+										pollOption.votes.push(vote._id);
+										pollOption.save((err, pollOption) => {
+											if (err) {
+												callback(err);
+											} else {
+												callback(false, pollOption);
+											}
+										});
+									});
+								}
+						});
+	},
+	this.addOption = function(pollId, optionText, userId, callback){
 		Poll
 				.findById(pollId)
+				.populate("options")
 				.exec(function (err, poll) {
-								if (err) callback(err);
-								let optionVoted = poll.options.find(op => op.displayName == option);
-								if (!optionVoted) {
-									poll.options.push({
-										displayName: option,
-										votes: 1
-									});
-								} else {
-									optionVoted.votes++;
-								}
-								poll.save(function(err, result){
-									if (err) callback(err);
-									callback(false, result);
-								})
+					if (err) {
+						callback(err);
+					} else if (!poll) {
+						callback("The specified poll does not exist");
+					} else {
+						let found = poll.options.find(o => o.displayName == optionText)
+						if (found) {
+							callback("The option already exists");
+						} else {
+							let newPollOption = new PollOption();
+							if (userId) newPollOption.author = userId;
+							newPollOption.creationDate = Date();
+							newPollOption.displayName =  optionText;
+							newPollOption.poll = poll._id;
+							//@TODO if poll.AUTHOR != userId: state="pending"
+							// until poll author activate it or not
+							newPollOption.state = "active";
 
-						});
+							newPollOption.save(function(err, pollOption){
+								if (err) {
+									callback(err);
+								} else {
+									poll.options.push(pollOption._id);
+									poll.save((err, poll) => {
+										if (err) {
+											callback(err);
+										} else callback(false, pollOption);
+									});
+								}
+							});
+						}
+					}
+			});
 	},
 	this.removePoll = (pollId, userId, callback) => {
 	    Poll

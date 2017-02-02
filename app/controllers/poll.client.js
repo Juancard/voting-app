@@ -3,6 +3,7 @@
 (function () {
   let apiUrl = appUrl + "/api/polls";
   let apiAddVote = apiUrl + "/add/vote";
+  let apiAddOption = apiUrl + "/add/option";
 
   let formNewVote = document.querySelector('form');
   let btnPollRemove = document.getElementById('btnPollRemove') || null;
@@ -35,11 +36,14 @@
     // Load twitter share button
     loadAnchorTwitterShare(data.poll);
 
+    // Only Show Active options
+    let activeOptions = data.poll.options.filter(o => o.state == "active");
+
     // Load select element with poll options
-    loadSelectOptions(data.poll.options);
+    loadSelectOptions(activeOptions);
 
     // Load pie chart with data from server
-    loadChart(myChart, data.poll.options);
+    loadChart(myChart, activeOptions);
   }
 
   function loadSelectOptions(pollOptions){
@@ -48,7 +52,7 @@
 
       // poll options
       pollOptions.forEach(
-        o => selectPollOptions.appendChild(createOption(o.displayName, o.displayName))
+        o => selectPollOptions.appendChild(createOption(o.displayName, o._id))
       );
       // user's custom option
       selectPollOptions.appendChild(opAddCustomOption);
@@ -69,7 +73,7 @@
     }, []);
 
     let chartValues = options.reduce((newVotes, oldData) => {
-      newVotes.push(oldData.votes);
+      newVotes.push(oldData.totalVotes);
       return newVotes;
     }, []);
 
@@ -83,26 +87,53 @@
     } else return true;
   }
 
-  let sendVote = (pollId, pollOption) => {
+  let sendVote = (optionId) => {
     let vote = {
-      pollId,
-      option: pollOption
+      optionId
     }
-    ajaxFunctions.ajaxRequest("POST", apiAddVote, vote, loadData);
+    let callback = (data) => {
+      data = JSON.parse(data);
+      if (data.err) {
+        alert(data.message || "Error en servidor");
+      } else{
+        commonChart.updateLabelValue(myChart, data.pollOption.displayName, data.pollOption.totalVotes);
+      }
+    }
+    ajaxFunctions.ajaxRequest("POST", apiAddVote, vote, callback);
+  }
+
+  let sendAddOption = (optionText) => {
+    let option = {
+      optionText,
+      pollId: hiddenInputPollId.value
+    }
+    let callback = (data) => {
+      data = JSON.parse(data);
+      if (data.error) {
+        alert(data.message || "Error en servidor");
+      } else {
+        console.log(data);
+        commonChart.addLabelValue(myChart, data.pollOption.displayName, data.pollOption.totalVotes);
+        selectPollOptions.insertBefore(createOption(data.pollOption.displayName, data.pollOption._id), selectPollOptions.lastChild);
+        sendVote(data.pollOption._id);
+      }
+    }
+    ajaxFunctions.ajaxRequest("POST", apiAddOption, option, callback);
   }
 
   let onSubmitVote = (event) => {
     event.preventDefault(); // por default manda form derecho al server el muy negro
     let selectedOp = getSelectedOption(selectPollOptions);
-    let pollOption;
     if (isSameOption(selectedOp, opAddCustomOption)){
-      pollOption = inputCustomOption.value;
+      let createdPollOption = inputCustomOption.value;
+      if (isValidPollOption(createdPollOption)) {
+        sendAddOption(createdPollOption);
+      }
     } else {
-      pollOption = selectedOp.value;
+      let pollOptionId = selectedOp.value;
+      sendVote(pollOptionId);
     }
-    if (isValidPollOption(pollOption)) {
-      sendVote(hiddenInputPollId.value, pollOption);
-    }
+
   }
 
   formNewVote.addEventListener("submit", onSubmitVote);
