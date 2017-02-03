@@ -3,7 +3,7 @@
 (function () {
   let apiUrl = appUrl + "/api/polls";
   let apiAddVote = apiUrl + "/votes/add";
-  let apiAddOption = apiUrl + "/options/add";
+  let apiAddOption = apiUrl + "/options/add/with/vote";
 
   let formNewVote = document.querySelector('form');
   let btnPollRemove = document.getElementById('btnPollRemove') || null;
@@ -103,10 +103,9 @@
     ajaxFunctions.ajaxRequest("POST", apiAddVote, vote, callback);
   }
 
-  let sendAddOption = (optionText) => {
+  let sendAddOptionWithVote = (optionText) => {
     let option = {
       optionText,
-      voting: true,
       pollId: hiddenInputPollId.value
     }
     let callback = (data) => {
@@ -114,10 +113,9 @@
       if (data.error) {
         alert(data.message || "Error en servidor");
       } else {
-        console.log(data);
+        console.log("Option added:", data);
         commonChart.addLabelValue(myChart, data.pollOption.displayName, data.pollOption.totalVotes);
         selectPollOptions.insertBefore(createOption(data.pollOption.displayName, data.pollOption._id), selectPollOptions.lastChild);
-        sendVote(data.pollOption._id);
       }
     }
     ajaxFunctions.ajaxRequest("POST", apiAddOption, option, callback);
@@ -129,7 +127,7 @@
     if (isSameOption(selectedOp, opAddCustomOption)){
       let createdPollOption = inputCustomOption.value;
       if (isValidPollOption(createdPollOption)) {
-        sendAddOption(createdPollOption);
+        sendAddOptionWithVote(createdPollOption);
       }
     } else {
       let pollOptionId = selectedOp.value;

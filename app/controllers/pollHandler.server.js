@@ -38,6 +38,7 @@ function pollHandler () {
 		// Populate Poll Options
 		let allPollOptionsCreated = [];
     for (let op in poll.options){
+			//@TODO CALL this.addOption here!
 			let newPollOption = new PollOption();
 
 			newPollOption.author = user._id;

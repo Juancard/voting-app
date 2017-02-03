@@ -5,6 +5,30 @@ module.exports = function (app, appEnv) {
   var PollHandler = require(appEnv.path + "/app/controllers/pollHandler.server.js");
   var pollHandler = new PollHandler();
 
+  let hasNotVoted = (req, res, next) => {
+    let pollId = req.body.pollId;
+    let userId = (req.user && req.user._id) || null;
+    pollHandler.hasVoted(pollId, userId, (err, hasVoted) => {
+      if (hasVoted) return res.json({
+        error: true,
+        message: "Sorry: You've already voted on this poll"
+      });
+      return next();
+    });
+  }
+
+  let isLoggedInJson = function(req, res, next) {
+     if (req.isAuthenticated()){
+       return next();
+     } else {
+       res.json({
+         error: true,
+         message: "Only authenticated users can perform this action"
+       });
+     }
+   }
+
+
   app.param("poll_id",  function (req, res, next, pollId) {
 
     console.log("Requested poll id: ", pollId);
@@ -48,7 +72,7 @@ module.exports = function (app, appEnv) {
       .get(appEnv.middleware.isLoggedIn, function (req, res) {
         res.render(appEnv.path + '/app/views/newpoll.pug');
       })
-      .post(appEnv.middleware.isLoggedIn, function(req, res){
+      .post(isLoggedInJson, function(req, res){
         pollHandler.addPoll(req.user, req.body, function(err, result){
           let out = {}
           if (err) {
@@ -72,7 +96,7 @@ module.exports = function (app, appEnv) {
     .get(function(req, res){
       res.json({poll: req.poll});
     })
-    .delete(function(req, res) {
+    .delete(isLoggedInJson, function(req, res) {
       pollHandler.removePoll(req.poll._id, req.user._id, function(err, result){
         let out = {}
         if (err) {
@@ -90,35 +114,46 @@ module.exports = function (app, appEnv) {
     });
 
   app.route('/api/polls/votes/add')
-    .post(function(req, res){
+    .post(hasNotVoted, function(req, res){
       let userId = (req.user && req.user._id) || null;
-      pollHandler.hasVoted(req.body.pollId, userId, (err, hasVoted) => {
-        if (hasVoted) return res.json({
-          error: true,
-          message: "Sorry: You've already voted on this poll"
+      pollHandler.addVote(req.body.optionId, userId, (err, pollOption) => {
+        if (err) return res.json({
+          error: err,
+          message: "Error while adding vote to our database"
         });
-        pollHandler.addVote(req.body.optionId, userId, (err, pollOption) => {
-          if (err) return res.json({
-            error: err,
-            message: "Error while adding vote to our database"
-          });
-          console.log("votaste", pollOption);
-          res.json({
-            error: false,
-            message: "Vote added!",
-            pollOption
-          });
+        res.json({
+          error: false,
+          message: "Vote added!",
+          pollOption
         });
-      })
+      });
     });
 
-    app.route('/api/polls/options/add')
-      .post(function(req, res){
-
-        if (!req.user) return res.json({
-            error: true, message: "Only authenticated users can add options to polls"
+    app.route('/api/polls/options/add/with/vote')
+      .post(isLoggedInJson, hasNotVoted, function(req, res){
+        pollHandler.addOption(req.body.pollId, req.body.optionText, req.user._id, (err, pollOption) => {
+          if (err) return res.json({
+            error: true,
+            message: err
           });
-        let userId = req.user._id
+          pollHandler.addVote(pollOption._id, pollOption.author, (err, pollOption) => {
+            if (err) return res.json({
+              error: err,
+              message: "Error while adding vote to our database"
+            });
+            return res.json({
+              error: false,
+              message: "Option and vote added!",
+              pollOption
+            });
+          });
+        });
+      });
+
+    app.route(isLoggedInJson, '/api/polls/options/add')
+      .post(function(req, res){
+        let userId = req.user._id;
+        let pollId = req.body.pollId;
         pollHandler.addOption(req.body.pollId, req.body.optionText, userId, function(err, pollOption){
           if (err) {
             res.json({
