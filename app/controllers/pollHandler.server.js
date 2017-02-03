@@ -154,7 +154,7 @@ function pollHandler () {
 	Remove Poll:
 	It receives poll id to be removed
 	and user id who requested te removal
-	It removes poll, options of the poll and votes from each option 
+	It removes poll, options of the poll and votes from each option
 	*/
 	this.removePoll = (pollId, userId, callback) => {
 		console.log("Poll to be removed: ", pollId);
@@ -203,7 +203,46 @@ function pollHandler () {
 					return callback(false, result);
 				});
 			});
-	};
+	},
+	this.getAllVotesFromPoll = (pollId, callback) => {
+		this.getPollById(pollId, (err, poll) => {
+			if (err) return callback(err);
+			let pollVotes = []
+			let allOp = poll.options.toObject();
+			for (let i in allOp){
+				let allVotes = allOp[i].votes.toObject();
+				for (let j in allVotes){
+					pollVotes.push(allVotes[j])
+				}
+			}
+			callback(false, pollVotes);
+		});
+	},
+	this.getAllVotersFromPoll = (pollId, callback) => {
+		this.getAllVotesFromPoll(pollId, (err, votes) => {
+			if (err) return callback(err);
+			let out = votes.reduce((votersId, vote) => {
+				votersId.push(vote.voter);
+				return votersId;
+			}, []);
+			callback(false, out);
+		})
+	},
+	this.hasVoted = (pollId, userId, callback) => {
+		this.getAllVotersFromPoll(pollId, (err, voters) => {
+			if (err) return callback(err);
+			if (!userId) return callback(false, voters.includes(userId)); // PATCH!
+			// is objectid in array of objectIds?
+			let found = false;
+			let i=0;
+			voters = voters.filter(v => v != null);
+			while (voters[i] && !found){
+				found = voters[i].equals(userId)
+				i++;
+			}
+			callback(false, found);
+		});
+	}
 }
 
 module.exports = pollHandler;

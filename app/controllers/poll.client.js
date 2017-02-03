@@ -2,8 +2,8 @@
 
 (function () {
   let apiUrl = appUrl + "/api/polls";
-  let apiAddVote = apiUrl + "/add/vote";
-  let apiAddOption = apiUrl + "/add/option";
+  let apiAddVote = apiUrl + "/votes/add";
+  let apiAddOption = apiUrl + "/options/add";
 
   let formNewVote = document.querySelector('form');
   let btnPollRemove = document.getElementById('btnPollRemove') || null;
@@ -89,11 +89,12 @@
 
   let sendVote = (optionId) => {
     let vote = {
-      optionId
+      optionId,
+      pollId: hiddenInputPollId.value
     }
     let callback = (data) => {
       data = JSON.parse(data);
-      if (data.err) {
+      if (data.error) {
         alert(data.message || "Error en servidor");
       } else{
         commonChart.updateLabelValue(myChart, data.pollOption.displayName, data.pollOption.totalVotes);
@@ -105,6 +106,7 @@
   let sendAddOption = (optionText) => {
     let option = {
       optionText,
+      voting: true,
       pollId: hiddenInputPollId.value
     }
     let callback = (data) => {

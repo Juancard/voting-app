@@ -7,18 +7,17 @@ module.exports = function (app, appEnv) {
 
   app.param("poll_id",  function (req, res, next, pollId) {
 
-  console.log("Requested poll id: ", pollId);
+    console.log("Requested poll id: ", pollId);
 
-  // ... VALIDATE POLL ID
-  pollHandler.getPollById(pollId, function(err, poll){
-    if (err) return next(err);
-    if (!poll) return res.render(appEnv.path + '/app/views/404.pug');
-
-    // SAVE POLL
-    req.poll = poll
-    return next();
+    // ... VALIDATE POLL ID
+    pollHandler.getPollById(pollId, function(err, poll){
+      if (err) return next(err);
+      if (!poll) return res.render(appEnv.path + '/app/views/404.pug');
+      // SAVE POLL
+      req.poll = poll
+      return next();
+    });
   });
-});
 
   app.route('/')
       .get(function (req, res) {
@@ -90,50 +89,50 @@ module.exports = function (app, appEnv) {
       });
     });
 
-  app.route('/api/polls/add/vote')
+  app.route('/api/polls/votes/add')
     .post(function(req, res){
       let userId = (req.user && req.user._id) || null;
-      pollHandler.addVote(req.body.optionId, userId, function(err, pollOption){
-        if (err) {
-          res.json({
+      pollHandler.hasVoted(req.body.pollId, userId, (err, hasVoted) => {
+        if (hasVoted) return res.json({
+          error: true,
+          message: "Sorry: You've already voted on this poll"
+        });
+        pollHandler.addVote(req.body.optionId, userId, (err, pollOption) => {
+          if (err) return res.json({
             error: err,
             message: "Error while adding vote to our database"
           });
-        } else {
+          console.log("votaste", pollOption);
           res.json({
             error: false,
             message: "Vote added!",
             pollOption
           });
-        }
-      });
+        });
+      })
     });
 
-    app.route('/api/polls/add/option')
+    app.route('/api/polls/options/add')
       .post(function(req, res){
 
-        if (!req.user) {
-          res.json({
+        if (!req.user) return res.json({
             error: true, message: "Only authenticated users can add options to polls"
           });
-        } else {
-          let userId = req.user._id
-          pollHandler.addOption(req.body.pollId, req.body.optionText, userId, function(err, pollOption){
-            if (err) {
-              res.json({
-                error: true,
-                message: err
-              });
-            } else {
-              res.json({
-                error: false,
-                message: "Option added!",
-                pollOption
-              });
-            }
-          });
-        }
-
+        let userId = req.user._id
+        pollHandler.addOption(req.body.pollId, req.body.optionText, userId, function(err, pollOption){
+          if (err) {
+            res.json({
+              error: true,
+              message: err
+            });
+          } else {
+            res.json({
+              error: false,
+              message: "Option added!",
+              pollOption
+            });
+          }
+        });
       });
 
 }
