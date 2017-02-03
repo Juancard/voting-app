@@ -9,11 +9,17 @@ function pollHandler () {
 	this.getPolls = function (callback) {
 	    Poll
 	        .find({active: true})
-					.populate("author")
-					.populate("options")
-					.populate("votes")
+					.populate('author')
+					.populate({
+						path: "options",
+						model: "PollOption",
+						populate: {
+							path: 'votes',
+							model: 'Vote'
+						}
+					})
 	        .exec(function (err, result) {
-	                if (err) callback(err);
+	                if (err) return callback(err);
                   callback(err, result);
 	            });
 	};
@@ -46,80 +52,73 @@ function pollHandler () {
 
 		// Save Poll Options
 		PollOption.insertMany(allPollOptionsCreated, (err, result) => {
-			if (err) {
-				return callback(err);
-			} else {
-				// Save Poll
-				newPoll.save(function(err, result){
-					if (err) {
-						return callback(err);
-					} else {
-						return callback(false, result);
-					}
-				});
-			}
-		})
+			if (err) return callback(err);
+			// Save Poll
+			newPoll.save(function(err, result){
+				if (err) return callback(err);
+				return callback(false, result);
+			});
+		});
   };
 
   this.getPollsByUserId = function(userId, callback){
     Poll
-        .find({userId, active: true})
-				.populate("author")
-				.populate("options")
-				.populate("votes")
+        .find({author: userId, active: true})
+				.populate('author')
+				.populate({
+					path: "options",
+					model: "PollOption",
+					populate: {
+						path: 'votes',
+						model: 'Vote'
+					}
+				})
         .exec(function (err, result) {
-                if (err) {
-									callback(err);
-								} else {
-									callback(false, result);
-								}
+                if (err) return callback(err);
+								callback(false, result);
             });
   }
   this.getPollById = function(id, callback){
     Poll
         .findOne({_id: id, active:true})
-				.populate("author")
-				.populate("options")
-				.populate("votes")
+				.populate('author')
+				.populate({
+					path: "options",
+					model: "PollOption",
+					populate: {
+						path: 'votes',
+						model: 'Vote'
+					}
+				})
         .exec(function (err, result) {
-                if (err) {
-									callback(err);
-								} else {
-									callback(false, result);
-								}
+                if (err) return callback(err);
+								callback(false, result);
             });
   }
 	this.addVote = function(optionId, userId, callback){
 		PollOption
 				.findById(optionId)
 				.exec(function (err, pollOption) {
-								if (err) {
-									callback(err);
-								} else if (!pollOption) {
-									callback(true);
-								} else {
-									// Create and fill vote
-									let vote = new Vote();
-									vote.creationDate = new Date();
-									vote.voter = userId;
-									vote.pollOption = optionId;
-									vote.state = "active";
+								if (err) return callback(err);
+								if (!pollOption) return callback(true);
+								// Create and fill vote
+								let vote = new Vote();
+								vote.creationDate = new Date();
+								vote.voter = userId;
+								vote.pollOption = optionId;
+								vote.state = "active";
 
-									// Save vote
-									vote.save(function(err, vote){
-										if (err) callback(err);
+								// Save vote
+								vote.save(function(err, vote){
+									if (err) callback(err);
 
-										// Add vote to option
-										pollOption.votes.push(vote._id);
-										pollOption.save((err, pollOption) => {
-											if (err) {
-												callback(err);
-											} else {
-												callback(false, pollOption);
-											}
-										});
+									// Add vote to option
+									pollOption.votes.push(vote._id);
+									pollOption.save((err, pollOption) => {
+										if (err) return callback(err);
+										callback(false, pollOption);
 									});
-								}
+								});
 						});
 	},
 	this.addOption = function(pollId, optionText, userId, callback){
@@ -127,48 +126,83 @@ function pollHandler () {
 				.findById(pollId)
 				.populate("options")
 				.exec(function (err, poll) {
-					if (err) {
-						callback(err);
-					} else if (!poll) {
-						callback("The specified poll does not exist");
-					} else {
-						let found = poll.options.find(o => o.displayName == optionText)
-						if (found) {
-							callback("The option already exists");
-						} else {
-							let newPollOption = new PollOption();
-							if (userId) newPollOption.author = userId;
-							newPollOption.creationDate = Date();
-							newPollOption.displayName =  optionText;
-							newPollOption.poll = poll._id;
-							//@TODO if poll.AUTHOR != userId: state="pending"
-							// until poll author activate it or not
-							newPollOption.state = "active";
+					if (err) return callback(err);
+					if (!poll) return callback("The specified poll does not exist");
+					let found = poll.options.find(o => o.displayName == optionText)
+					if (found) return callback("The option already exists");
+					let newPollOption = new PollOption();
+					if (userId) newPollOption.author = userId;
+					newPollOption.creationDate = Date();
+					newPollOption.displayName =  optionText;
+					newPollOption.poll = poll._id;
+					//@TODO if poll.AUTHOR != userId: state="pending"
+					// until poll author activate it or not
+					newPollOption.state = "active";
 
-							newPollOption.save(function(err, pollOption){
-								if (err) {
-									callback(err);
-								} else {
-									poll.options.push(pollOption._id);
-									poll.save((err, poll) => {
-										if (err) {
-											callback(err);
-										} else callback(false, pollOption);
-									});
-								}
-							});
-						}
-					}
+					newPollOption.save(function(err, pollOption){
+						if (err) return callback(err);
+						poll.options.push(pollOption._id);
+						poll.save((err, poll) => {
+							if (err) return callback(err);
+							return callback(false, pollOption);
+						});
+					});
 			});
 	},
+
+	/*
+	Remove Poll:
+	It receives poll id to be removed
+	and user id who requested te removal
+	It removes poll, options of the poll and votes from each option 
+	*/
 	this.removePoll = (pollId, userId, callback) => {
-	    Poll
-	        .findOneAndUpdate({_id: pollId, userId: userId}, { active: false })
-	        .exec(function (err, result) {
-	                if (err) callback(err);
-	                callback(false, result);
-	            }
-	        );
+		console.log("Poll to be removed: ", pollId);
+	  Poll
+	    .findOne({_id: pollId, author: userId})
+			.exec(function (err, pollToRemove) {
+				console.log("Poll found: ", pollId);
+        if (err) return callback(err);
+				if (!pollToRemove) return callback("Error: You have no permissions to delete this poll");
+				pollToRemove.options.forEach(idOptionToRemove => {
+					console.log("Option to be removed: ", idOptionToRemove);
+					PollOption
+						.findById(idOptionToRemove)
+						.exec((err, optionToRemove) => {
+							if (err) return callback("Error: On removing options. Please try again later.");
+							optionToRemove.votes.forEach(idVote => {
+								console.log("Vote to be removed: ", idVote);
+								Vote
+									.findById(idVote)
+									.exec((err, voteToRemove) => {
+										console.log("Vote searched vs received: ", idVote, voteToRemove);
+										if (err) return callback("Error: on removing votes. Please try again later.");
+										voteToRemove.state = "inactive";
+										voteToRemove.save( (err, result) => {
+											if (err) return callback(err);
+											if (!result) return callback("Error: Unexpected failure in saving a deleted vote. Please, try again later.");
+											console.log("Finish removing vote", result._id);
+										});
+									})
+							});
+							//@TODO Promises: only remove PollOption when all votes finished removing succesfully
+							optionToRemove.state = "inactive";
+							optionToRemove.save( (err, result) => {
+								if (err) return callback(err);
+								if (!result) return callback("Error: Unexpected failure in saving a deleted option. Please, try again later.");
+								console.log("Finish removing Option", result.displayName);
+							});
+						});
+				});
+				//@TODO Promises: only remove pollToRemove when all options finished removing succesfully
+				pollToRemove.active = false;
+				pollToRemove.save( (err, result) => {
+					if (err) return callback(err);
+					if (!result) return callback("Error: Unexpected failure in saving deleted poll. Please, try again Later.");
+					console.log("Finish removing poll");
+					return callback(false, result);
+				});
+			});
 	};
 }
 

@@ -5,6 +5,21 @@ module.exports = function (app, appEnv) {
   var PollHandler = require(appEnv.path + "/app/controllers/pollHandler.server.js");
   var pollHandler = new PollHandler();
 
+  app.param("poll_id",  function (req, res, next, pollId) {
+
+  console.log("Requested poll id: ", pollId);
+
+  // ... VALIDATE POLL ID
+  pollHandler.getPollById(pollId, function(err, poll){
+    if (err) return next(err);
+    if (!poll) return res.render(appEnv.path + '/app/views/404.pug');
+
+    // SAVE POLL
+    req.poll = poll
+    return next();
+  });
+});
+
   app.route('/')
       .get(function (req, res) {
         pollHandler.getPolls(function(err, polls){
@@ -49,35 +64,21 @@ module.exports = function (app, appEnv) {
         });
       });
 
-  app.route('/polls/:id([a-fA-F0-9]{24})')
+  app.route('/polls/:poll_id([a-fA-F0-9]{24})')
       .get(function (req, res) {
-        pollHandler.getPollById(req.params.id, function(err, result){
-          if (err) throw err;
-          if (!result) {
-            res.render(appEnv.path + '/app/views/404.pug');
-          } else {
-            res.render(appEnv.path + '/app/views/poll.pug', {poll: result});
-          }
-        })
+        res.render(appEnv.path + '/app/views/poll.pug', {poll: req.poll});
       });
 
-  app.route('/api/polls/:id([a-fA-F0-9]{24})')
+  app.route('/api/polls/:poll_id([a-fA-F0-9]{24})')
     .get(function(req, res){
-      pollHandler.getPollById(req.params.id, function(err, poll){
-        if (err) throw err;
-        if (!poll){
-          res.render(appEnv.path + '/app/views/404.pug');
-        } else {
-          res.json({poll});
-        }
-      })
+      res.json({poll: req.poll});
     })
     .delete(function(req, res) {
-      pollHandler.removePoll(req.params.id, req.user._id, function(err, result){
+      pollHandler.removePoll(req.poll._id, req.user._id, function(err, result){
         let out = {}
         if (err) {
-          out.error = error;
-          out.message = "Error: on deleting poll. Please, try again later.";
+          out.error = true;
+          out.message = err;
         } else if (!result){
           out.error = true;
           out.message = "You are not allowed to remove this poll";

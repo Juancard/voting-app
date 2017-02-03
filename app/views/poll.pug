@@ -24,7 +24,7 @@ block content
       .col-md-8
         canvas#myChart(width="600", height="300")
         br
-        if user && user._id.equals(poll.userId)
+        if user && user._id.equals(poll.author._id)
           button#btnPollRemove.btn.btn-block.btn-danger
             span.glyphicon.glyphicon-remove
             |  Remove poll

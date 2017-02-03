@@ -146,8 +146,8 @@
         alert(data.message || "Error en servidor");
       } else {
         alert(data.message || "Operación exitosa");
+        window.location.href = data.redirect || appUrl;
       }
-      window.location.href = data.redirect || appUrl;
     });
   }
 
