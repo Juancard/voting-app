@@ -20,7 +20,7 @@
      if (!options){
        alert("Error: Poll options can not be empty");
        return false;
-     } else if (options.split("\n").length < 2) {
+     } else if (options.length < 2) {
        alert("Error: Poll has to have at least two options");
        return false;
      } else return true
@@ -49,9 +49,9 @@
    let onSubmitPoll = (event) => {
      event.preventDefault(); // por default manda form derecho al server el muy negro
      let pollTitle = inputPollTitle.value;
-     let pollOptions = textAreaPollOptions.value;
+     let pollOptions = textAreaPollOptions.value.split("\n").filter(o => o != "");
      if (isValidPollTitle(pollTitle) && areValidPollOptions(pollOptions)) {
-       sendPoll(pollTitle, pollOptions.split("\n").filter(o => o != ""));
+       sendPoll(pollTitle, pollOptions);
      }
    }
 
