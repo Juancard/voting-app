@@ -12,11 +12,12 @@ nav.navbar.navbar-default
     #bs-example-navbar-collapse-1.collapse.navbar-collapse
 
       ul.nav.navbar-nav
-        li.active
-          a(href="/") Home
         li
-          a Hi, #{user.twitter.displayName}!
-          
+          a(href="/") Home
+        if user
+          li
+            a Hi, #{user.twitter.displayName}!
+
       ul.nav.navbar-nav.navbar-right
         if user
           li
@@ -34,3 +35,26 @@ nav.navbar.navbar-default
                 |   Sign in
     // /.navbar-collapse
   // /.container-fluid
+
+script.
+  let currentUrl = window.location.href;
+
+  // Get Bootstrap navbars and iterate
+  let navbars = document.getElementsByClassName('nav navbar-nav');
+  for (let i = 0; i < navbars.length; i++) {
+
+    // Get list items from navbars and iterate
+    let liList = navbars[i].getElementsByTagName('LI');
+    for (let j = 0; j < liList.length; j++) {
+
+      // Get Links from every list item and iterate
+      let linksList = liList[j].getElementsByTagName('A');
+      for (let k = 0; k < linksList.length; k++) {
+
+        // Active list items that have links matching current url
+        if (linksList[k].href == currentUrl) {
+          liList[j].classList.add('active');
+        }
+      }
+    }
+  }
