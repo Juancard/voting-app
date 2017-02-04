@@ -6,7 +6,7 @@ module.exports = function (app, appEnv) {
   var pollHandler = new PollHandler();
 
   let hasNotVoted = (req, res, next) => {
-    let pollId = req.body.pollId;
+    let pollId = req.poll;
     let voterId = (req.user && req.user._id) || null;
     let voterIp = req.clientIp;
     pollHandler.hasVoted(pollId, voterId, voterIp, (err, hasVoted) => {
@@ -98,7 +98,7 @@ module.exports = function (app, appEnv) {
       res.json({poll: req.poll});
     })
     .delete(isLoggedInJson, function(req, res) {
-      pollHandler.removePoll(req.poll._id, req.user._id, function(err, result){
+      pollHandler.removePoll(req.poll, req.user._id, function(err, result){
         let out = {}
         if (err) {
           out.error = true;
@@ -114,7 +114,7 @@ module.exports = function (app, appEnv) {
       });
     });
 
-  app.route('/api/polls/votes/add')
+  app.route('/api/polls/:poll_id([a-fA-F0-9]{24})/add/vote')
     .post(hasNotVoted, function(req, res){
       let voterId = (req.user && req.user._id) || null;
       let voterIp = req.clientIp;
@@ -132,13 +132,12 @@ module.exports = function (app, appEnv) {
       });
     });
 
-    app.route('/api/polls/options/add/with/vote')
-      .post(isLoggedInJson, hasNotVoted, function(req, res){
-        let pollId = req.body.pollId;
+    app.route('/api/polls/:poll_id([a-fA-F0-9]{24})/add/option/with/vote')
+      .post(isLoggedInJson, hasNotVoted, (req, res) => {
         let optionVotedText = req.body.optionText;
         let voterId = req.user._id;
         let voterIp = req.clientIp;
-        pollHandler.addOption(pollId, optionVotedText, voterId, (err, pollOption) => {
+        pollHandler.addOption(req.poll, optionVotedText, voterId, (err, pollOption) => {
           if (err) return res.json({
             error: true,
             message: err
@@ -157,11 +156,11 @@ module.exports = function (app, appEnv) {
         });
       });
 
-    app.route(isLoggedInJson, '/api/polls/options/add')
+    app.route(isLoggedInJson, '/api/polls/:poll_id([a-fA-F0-9]{24})/add/option')
       .post(function(req, res){
         let userId = req.user._id;
-        let pollId = req.body.pollId;
-        pollHandler.addOption(req.body.pollId, req.body.optionText, userId, function(err, pollOption){
+        let optionText = req.body.optionText;
+        pollHandler.addOption(req.poll, optionText, userId, (err, pollOption) => {
           if (err) {
             res.json({
               error: true,

@@ -2,8 +2,8 @@
 
 (function () {
   let apiUrl = appUrl + "/api/polls";
-  let apiAddVote = apiUrl + "/votes/add";
-  let apiAddOption = apiUrl + "/options/add/with/vote";
+  let apiAddVote = "/add/vote";
+  let apiAddOption = "/add/option/with/vote";
 
   let formNewVote = document.querySelector('form');
   let btnPollRemove = document.getElementById('btnPollRemove') || null;
@@ -18,8 +18,8 @@
   let myChart = commonChart.getEmptyChart(chartContext, 'doughnut');
 
   ajaxFunctions.ready(function(){
-    let url = apiUrl + "/" + hiddenInputPollId.value;
-    ajaxFunctions.ajaxRequest("GET", url, false, loadData);
+    apiUrl += "/" + hiddenInputPollId.value;
+    ajaxFunctions.ajaxRequest("GET", apiUrl, false, loadData);
   });
 
   let loadData = (data) => {
@@ -76,37 +76,33 @@
 
   let sendVote = (optionId) => {
     let vote = {
-      optionId,
-      pollId: hiddenInputPollId.value
+      optionId
     }
     let callback = (data) => {
       data = JSON.parse(data);
       if (data.error) {
         alert(data.message || "Error en servidor");
       } else{
-        console.log("Vote added: ", data.pollOption);
         commonChart.updateLabelValue(myChart, data.pollOption.displayName, data.pollOption.totalVotes);
       }
     }
-    ajaxFunctions.ajaxRequest("POST", apiAddVote, vote, callback);
+    ajaxFunctions.ajaxRequest("POST", apiUrl + apiAddVote, vote, callback);
   }
 
   let sendAddOptionWithVote = (optionText) => {
     let option = {
-      optionText,
-      pollId: hiddenInputPollId.value
+      optionText
     }
     let callback = (data) => {
       data = JSON.parse(data);
       if (data.error) {
         alert(data.message || "Error en servidor");
       } else {
-        console.log("Option added:", data);
         commonChart.addLabelValue(myChart, data.pollOption.displayName, data.pollOption.totalVotes);
         selectPollOptions.insertBefore(createOption(data.pollOption.displayName, data.pollOption._id), selectPollOptions.lastChild);
       }
     }
-    ajaxFunctions.ajaxRequest("POST", apiAddOption, option, callback);
+    ajaxFunctions.ajaxRequest("POST", apiUrl + apiAddOption, option, callback);
   }
 
   let onSubmitVote = (event) => {
@@ -129,8 +125,7 @@
   formNewVote.addEventListener("submit", onSubmitVote);
 
   var onDeletePoll = () => {
-    let destUrl = apiUrl + "/" + hiddenInputPollId.value;
-    ajaxFunctions.ajaxRequest("DELETE", destUrl, null, (data) => {
+    ajaxFunctions.ajaxRequest("DELETE", apiUrl, null, (data) => {
       data = JSON.parse(data);
       if (data.error) {
         alert(data.message || "Error en servidor");
