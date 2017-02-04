@@ -30,25 +30,17 @@ function pollHandler () {
 		let now = new Date();
 
 		// Populate Poll Object
-    let newPoll = new Poll();
-    newPoll.author = user._id;
-    newPoll.title = poll.title;
-		newPoll.active = true;
-		newPoll.creationDate = now;
+    let newPoll = Poll.newInstance(user._id, poll.title);
 
-		// Populate Poll Options
 		let allPollOptionsCreated = [];
     for (let op in poll.options){
-			//@TODO CALL this.addOption here!
-			let newPollOption = new PollOption();
+			// Populate Poll Options
+			let newPollOption = PollOption.newInstance(newPoll._id, user._id, poll.options[op]);
 
-			newPollOption.author = user._id;
-			newPollOption.creationDate = now;
-			newPollOption.displayName =  poll.options[op];
-			newPollOption.poll = newPoll._id;
-			newPollOption.state = "active";
+			// save option in poll
+			newPoll.options.push(newPollOption._id);
 
-      newPoll.options.push(newPollOption._id);
+			// ready with this option
 			allPollOptionsCreated.push(newPollOption);
     }
 
@@ -105,12 +97,7 @@ function pollHandler () {
 								if (!pollOption) return callback(true);
 
 								// Create and fill vote
-								let vote = new Vote();
-								vote.creationDate = new Date();
-								vote.voter = userId;
-								vote.pollOption = optionId;
-								vote.state = "active";
-								vote.voterIp = voterIp;
+								let vote = Vote.newInstance(optionId, userId, voterIp);
 
 								// Save vote
 								vote.save(function(err, vote){
@@ -130,17 +117,19 @@ function pollHandler () {
 				.populate("options")
 				.exec(function (err, poll) {
 					if (err) return callback(err);
+
+					// If poll does not exists, error
 					if (!poll) return callback("The specified poll does not exist");
-					let found = poll.options.find(o => o.displayName == optionText)
+
+					// If option text already exists, error
+					let found = poll.options.find(o => o.displayName == optionText);
 					if (found) return callback("The option already exists");
-					let newPollOption = new PollOption();
-					if (userId) newPollOption.author = userId;
-					newPollOption.creationDate = Date();
-					newPollOption.displayName =  optionText;
-					newPollOption.poll = poll._id;
+
+					// all is ok. let's create the option
+					let newPollOption = PollOption.newInstance(poll._id, userId, optionText);
 					//@TODO if poll.AUTHOR != userId: state="pending"
 					// until poll author activate it or not
-					newPollOption.state = "active";
+					//newPollOption.state = "pending";
 
 					newPollOption.save(function(err, pollOption){
 						if (err) return callback(err);
@@ -207,6 +196,7 @@ function pollHandler () {
 				});
 			});
 	},
+	
 	this.getAllVotesFromPoll = (pollId, callback) => {
 		this.getPollById(pollId, (err, poll) => {
 			if (err) return callback(err);

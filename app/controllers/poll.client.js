@@ -121,7 +121,6 @@
       }
     } else {
       let pollOptionId = selectedOp.value;
-      console.log("entre aca");
       sendVote(pollOptionId);
     }
 

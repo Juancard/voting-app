@@ -20,4 +20,18 @@ var Vote = new Schema({
 
 Vote.plugin(ipAddressPlugin, {fields: ["voterIp"]});
 
+Vote
+  .statics.newInstance = function newInstance(pollOption, voter,
+    voterIp, state="active", creationDate=new Date(), options=[]) {
+  let newVote = new this();
+
+  newVote.creationDate = creationDate;
+  newVote.voter = voter;
+  newVote.pollOption = pollOption;
+  newVote.state = state;
+  newVote.voterIp = voterIp;
+
+  return newVote;
+}
+
 module.exports = mongoose.model('Vote', Vote);
