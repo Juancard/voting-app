@@ -1,5 +1,7 @@
 extends skeleton.pug
 
+block title
+  title #{poll.title} - Voting-app!
 block content
   .jumbotron
     input#pollId(hidden, value=poll._id)
