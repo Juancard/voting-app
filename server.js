@@ -9,6 +9,7 @@ var logger = require("morgan");
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var flash = require('connect-flash');
+var requestIp = require('request-ip');
 
 var app = express();
 require('dotenv').load();
@@ -46,6 +47,9 @@ app.use(function(req, res, next) {
   res.locals.user = req.user;
   next();
 });
+
+// Saves ip in given attributeName as req.someNameHere
+app.use(requestIp.mw({ attributeName : 'clientIp' }));
 
 // Data to send to Routes files
 var appEnv = {

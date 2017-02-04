@@ -3,6 +3,7 @@
 var Poll = require('../models/polls.js');
 var PollOption = require('../models/pollOptions.js');
 var Vote = require('../models/votes.js');
+var ip = require("ip");
 
 function pollHandler () {
 
@@ -96,27 +97,29 @@ function pollHandler () {
 								callback(false, result);
             });
   }
-	this.addVote = function(optionId, userId, callback){
+	this.addVote = function(optionId, userId, voterIp, callback){
 		PollOption
 				.findById(optionId)
 				.exec(function (err, pollOption) {
 								if (err) return callback(err);
 								if (!pollOption) return callback(true);
+
 								// Create and fill vote
 								let vote = new Vote();
 								vote.creationDate = new Date();
 								vote.voter = userId;
 								vote.pollOption = optionId;
 								vote.state = "active";
+								vote.voterIp = voterIp;
 
 								// Save vote
 								vote.save(function(err, vote){
 									if (err) callback(err);
-
 									// Add vote to option
 									pollOption.votes.push(vote._id);
 									pollOption.save((err, pollOption) => {
 										if (err) return callback(err);
+										console.log(pollOption, pollOption.toObject());
 										callback(false, pollOption);
 									});
 								});
@@ -219,7 +222,7 @@ function pollHandler () {
 			callback(false, pollVotes);
 		});
 	},
-	this.getAllVotersFromPoll = (pollId, callback) => {
+	this.getAllVotersIdFromPoll = (pollId, callback) => {
 		this.getAllVotesFromPoll(pollId, (err, votes) => {
 			if (err) return callback(err);
 			let out = votes.reduce((votersId, vote) => {
@@ -229,20 +232,37 @@ function pollHandler () {
 			callback(false, out);
 		})
 	},
-	this.hasVoted = (pollId, userId, callback) => {
-		this.getAllVotersFromPoll(pollId, (err, voters) => {
-			if (err) return callback(err);
-			if (!userId) return callback(false, voters.includes(userId)); // PATCH!
-			// is objectid in array of objectIds?
-			let found = false;
-			let i=0;
-			voters = voters.filter(v => v != null);
-			while (voters[i] && !found){
-				found = voters[i].equals(userId)
-				i++;
-			}
-			callback(false, found);
-		});
+	this.hasVoted = (pollId, userId, userIp, callback) => {
+		// Get the poll
+		Poll
+			.findById(pollId)
+			.exec((err, poll) => {
+				if (err) return callback(err);
+
+				// the options I want the votes to be in
+				let allPollOptions = poll.options;
+				let toSearch = {
+					"pollOption": {$in: allPollOptions}
+				};
+
+				// if is an authenticated user, search by user id
+				if (userId) {
+					toSearch["voter"] = userId;
+				} else {
+					// if not authenticated search by ip
+					toSearch["_voterIp_buf"] = ip.toBuffer(userIp)
+				}
+
+				// Search votes under given conditions
+				Vote
+					.find(toSearch)
+					.exec((err, votesGivenByThisUser) => {
+						if (err) return callback(err);
+
+						// HASVOTED is true when array is NOT empty
+						callback(false, votesGivenByThisUser.length > 0);
+					});
+				});
 	}
 }
 

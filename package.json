@@ -31,11 +31,14 @@
     "express": "^4.12.4",
     "express-session": "^1.11.3",
     "flash": "^1.1.0",
+    "ip": "^1.1.4",
     "mongoose": "^4.1.0",
+    "mongoose-ip-address": "0.0.6",
     "morgan": "^1.7.0",
     "passport": "^0.3.0",
     "passport-github": "^1.0.0",
     "passport-twitter": "^1.0.4",
-    "pug": "^2.0.0-beta10"
+    "pug": "^2.0.0-beta10",
+    "request-ip": "^1.2.3"
   }
 }

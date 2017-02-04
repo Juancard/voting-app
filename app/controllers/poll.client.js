@@ -97,6 +97,7 @@
       if (data.error) {
         alert(data.message || "Error en servidor");
       } else{
+        console.log("Vote added: ", data.pollOption);
         commonChart.updateLabelValue(myChart, data.pollOption.displayName, data.pollOption.totalVotes);
       }
     }

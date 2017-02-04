@@ -7,8 +7,9 @@ module.exports = function (app, appEnv) {
 
   let hasNotVoted = (req, res, next) => {
     let pollId = req.body.pollId;
-    let userId = (req.user && req.user._id) || null;
-    pollHandler.hasVoted(pollId, userId, (err, hasVoted) => {
+    let voterId = (req.user && req.user._id) || null;
+    let voterIp = req.clientIp;
+    pollHandler.hasVoted(pollId, voterId, voterIp, (err, hasVoted) => {
       if (hasVoted) return res.json({
         error: true,
         message: "Sorry: You've already voted on this poll"
@@ -115,8 +116,10 @@ module.exports = function (app, appEnv) {
 
   app.route('/api/polls/votes/add')
     .post(hasNotVoted, function(req, res){
-      let userId = (req.user && req.user._id) || null;
-      pollHandler.addVote(req.body.optionId, userId, (err, pollOption) => {
+      let voterId = (req.user && req.user._id) || null;
+      let voterIp = req.clientIp;
+      let optionVotedId = req.body.optionId;
+      pollHandler.addVote(optionVotedId, voterId, voterIp, (err, pollOption) => {
         if (err) return res.json({
           error: err,
           message: "Error while adding vote to our database"
@@ -131,12 +134,16 @@ module.exports = function (app, appEnv) {
 
     app.route('/api/polls/options/add/with/vote')
       .post(isLoggedInJson, hasNotVoted, function(req, res){
-        pollHandler.addOption(req.body.pollId, req.body.optionText, req.user._id, (err, pollOption) => {
+        let pollId = req.body.pollId;
+        let optionVotedText = req.body.optionText;
+        let voterId = req.user._id;
+        let voterIp = req.clientIp;
+        pollHandler.addOption(pollId, optionVotedText, voterId, (err, pollOption) => {
           if (err) return res.json({
             error: true,
             message: err
           });
-          pollHandler.addVote(pollOption._id, pollOption.author, (err, pollOption) => {
+          pollHandler.addVote(pollOption._id, voterId, voterIp, (err, pollOption) => {
             if (err) return res.json({
               error: err,
               message: "Error while adding vote to our database"

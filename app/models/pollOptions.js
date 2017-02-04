@@ -20,8 +20,11 @@ var PollOption = new Schema({
   }
 });
 
-PollOption.virtual('totalVotes').get(function () {
-  return this.votes.length;
-});
+PollOption
+  .virtual('totalVotes')
+    .get(function () {
+      // RETURNS ALL VOTES, INCLUDING INACTIVE ONES
+      return this.votes.length;
+    });
 
 module.exports = mongoose.model('PollOption', PollOption);
