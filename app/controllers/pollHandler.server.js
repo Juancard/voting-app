@@ -180,46 +180,6 @@ function pollHandler () {
 				console.log("Finish removing poll");
 				return callback(false, result);
 			});
-			/*
-		pollToRemove.options.forEach(idOptionToRemove => {
-			console.log("Option to be removed: ", idOptionToRemove);
-			PollOption
-				.findById(idOptionToRemove)
-				.exec((err, optionToRemove) => {
-					if (err) return callback("Error: On removing options. Please try again later.");
-					optionToRemove.votes.forEach(idVote => {
-						console.log("Vote to be removed: ", idVote);
-						Vote
-							.findById(idVote)
-							.exec((err, voteToRemove) => {
-								console.log("Vote searched vs received: ", idVote, voteToRemove);
-								if (err) return callback("Error: on removing votes. Please try again later.");
-								voteToRemove.state = "inactive";
-								voteToRemove.save( (err, result) => {
-									if (err) return callback(err);
-									if (!result) return callback("Error: Unexpected failure in saving a deleted vote. Please, try again later.");
-									console.log("Finish removing vote", result._id);
-								});
-							})
-					});
-					//@TODO Promises: only remove PollOption when all votes finished removing succesfully
-					optionToRemove.state = "inactive";
-					optionToRemove.save( (err, result) => {
-						if (err) return callback(err);
-						if (!result) return callback("Error: Unexpected failure in saving a deleted option. Please, try again later.");
-						console.log("Finish removing Option", result.displayName);
-					});
-				});
-			});
-			//@TODO Promises: only remove pollToRemove when all options finished removing succesfully
-			pollToRemove.active = false;
-			pollToRemove.save( (err, result) => {
-				if (err) return callback(err);
-				if (!result) return callback("Error: Unexpected failure in saving deleted poll. Please, try again Later.");
-				console.log("Finish removing poll");
-				return callback(false, result);
-			});
-			*/
 	},
 
 	this.getAllVotesFromPoll = (pollId, callback) => {
