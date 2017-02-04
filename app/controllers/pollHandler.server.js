@@ -119,7 +119,6 @@ function pollHandler () {
 									pollOption.votes.push(vote._id);
 									pollOption.save((err, pollOption) => {
 										if (err) return callback(err);
-										console.log(pollOption, pollOption.toObject());
 										callback(false, pollOption);
 									});
 								});

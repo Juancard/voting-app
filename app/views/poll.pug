@@ -10,6 +10,11 @@ block content
           .form-group
             label(for='options') I'd like to vote for...:
             select#selectPollOptions.form-control(name='options', tabindex='1', autofocus, required)
+              each o in poll.options
+                if o.state == "active"
+                  option(value=o._id) #{o.displayName}
+              if (user)
+                option(value='add') -- Add Other --
           .form-group#groupCustomOption(style="display:None")
             label(for='customOption') My vote is:
             input.form-control(type="text", name='customOption', tabindex='1', autofocus)

@@ -11,7 +11,6 @@
 
   let hiddenInputPollId = document.getElementById('pollId');
   let selectPollOptions = document.getElementById('selectPollOptions');
-  let opAddCustomOption = createOption("Add another option", "add");
   let groupCustomOption = document.getElementById("groupCustomOption");
   let inputCustomOption = document.getElementsByName('customOption')[0];
 
@@ -39,23 +38,8 @@
     // Only Show Active options
     let activeOptions = data.poll.options.filter(o => o.state == "active");
 
-    // Load select element with poll options
-    loadSelectOptions(activeOptions);
-
     // Load pie chart with data from server
     loadChart(myChart, activeOptions);
-  }
-
-  function loadSelectOptions(pollOptions){
-      // clear select
-      selectPollOptions.innerHTML = '';
-
-      // poll options
-      pollOptions.forEach(
-        o => selectPollOptions.appendChild(createOption(o.displayName, o._id))
-      );
-      // user's custom option
-      selectPollOptions.appendChild(opAddCustomOption);
   }
 
   function loadAnchorTwitterShare(poll) {
@@ -73,7 +57,10 @@
     }, []);
 
     let chartValues = options.reduce((newVotes, oldData) => {
-      newVotes.push(oldData.totalVotes);
+      let optionVotes = oldData.votes.filter(v => {
+        return v.state == "active";
+      });
+      newVotes.push(optionVotes.length);
       return newVotes;
     }, []);
 
@@ -125,13 +112,16 @@
   let onSubmitVote = (event) => {
     event.preventDefault(); // por default manda form derecho al server el muy negro
     let selectedOp = getSelectedOption(selectPollOptions);
-    if (isSameOption(selectedOp, opAddCustomOption)){
+    // if option value is empty:
+    if (selectedOp.value == 'add'){
+      // it's 'add custom option' option
       let createdPollOption = inputCustomOption.value;
       if (isValidPollOption(createdPollOption)) {
         sendAddOptionWithVote(createdPollOption);
       }
     } else {
       let pollOptionId = selectedOp.value;
+      console.log("entre aca");
       sendVote(pollOptionId);
     }
 
@@ -158,7 +148,7 @@
 
   selectPollOptions.addEventListener("change", function(event){
     let selectedOp = getSelectedOption(selectPollOptions);
-    if (isSameOption(selectedOp, opAddCustomOption)){
+    if (selectedOp.value == 'add'){
       if (groupCustomOption.style.display === "none"){
         groupCustomOption.style.display = ""; // show
         inputCustomOption.required = true;
