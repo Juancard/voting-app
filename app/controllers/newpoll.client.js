@@ -3,6 +3,7 @@
 (function () {
 
    let form = document.querySelector('form');
+   let btnSubmitForm = document.getElementById("btnMakePoll");
    let inputPollTitle = document.getElementsByName('title')[0];
    let textAreaPollOptions = document.getElementsByName('options')[0];
 
@@ -27,8 +28,10 @@
    }
 
    let sendPoll = (pollTitle, pollOptions) => {
+     btnSubmitForm.disabled = true;
 
      let afterPollSent = (response) => {
+       btnSubmitForm.disabled = false;
        let data = JSON.parse(response);
        if (data.error) {
          alert(data.message);

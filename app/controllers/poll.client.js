@@ -79,6 +79,7 @@
       optionId
     }
     let callback = (data) => {
+      formNewVote.btnVote.disabled = false;
       data = JSON.parse(data);
       if (data.error) {
         alert(data.message || "Error en servidor");
@@ -94,6 +95,7 @@
       optionText
     }
     let callback = (data) => {
+      formNewVote.btnVote.disabled = false;
       data = JSON.parse(data);
       if (data.error) {
         alert(data.message || "Error en servidor");
@@ -107,6 +109,8 @@
 
   let onSubmitVote = (event) => {
     event.preventDefault(); // por default manda form derecho al server el muy negro
+    formNewVote.btnVote.disabled = true; // disable button until callback ends
+
     let selectedOp = getSelectedOption(selectPollOptions);
     // if option value is empty:
     if (selectedOp.value == 'add'){
@@ -125,7 +129,9 @@
   formNewVote.addEventListener("submit", onSubmitVote);
 
   var onDeletePoll = () => {
+    btnPollRemove.disabled = true;
     ajaxFunctions.ajaxRequest("DELETE", apiUrl, null, (data) => {
+      btnPollRemove.disabled = false;
       data = JSON.parse(data);
       if (data.error) {
         alert(data.message || "Error en servidor");
