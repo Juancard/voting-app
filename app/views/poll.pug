@@ -6,7 +6,7 @@ block content
   .jumbotron
     input#pollId(hidden, value=poll._id)
     .row
-      .col-md-4
+      .col-md-offset-1.col-md-4
         h3 #{poll.title}
         form
 
@@ -29,9 +29,9 @@ block content
         a#anchorShareTwitter.btn.btn-info.btn-block(tabindex='3', target="_blank")
           span.fa.fa-twitter
           |  Share
-
-      .col-md-8
-        canvas#myChart(width="600", height="300")
+      br
+      .col-md-offset-1.col-md-5.col-md-offset-1
+        canvas#myChart()
         br
         if user && user._id.equals(poll.author._id)
           button#btnPollRemove.btn.btn-block.btn-danger
