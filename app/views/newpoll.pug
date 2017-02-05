@@ -2,17 +2,89 @@ extends skeleton.pug
 block title
   title New Poll - Voting-app!
 block content
-  .jumbotron()
-    h1 Make a new poll!
+  .jumbotron
+    h1.text-center New Poll
     form.row
-      .col-md-offset-1.col-md-10
+      .col-md-offset-3.col-md-6
         .form-group
           label(for='title') Title
-          input.form-control(type='text', name='title', placeholder='My poll title', tabindex='1', autofocus, required, maxlength="50")
+          input.form-control(type='text', name='title', placeholder="What's your favourite food?", tabindex='1', autofocus, required, maxlength="50")
+        #option-container.form-group
+          label Options
+          .input-group
+            span.nth-option.input-group-addon 1
+            input.input-with-option.form-control(type="text", placeholder="Meat")
+            span.input-group-btn
+              button#btn-add-option.btn.btn-secondary.btn-success(type="button")
+                span.fa.fa-plus
+        br
         .form-group
-          label(for='options') Options (seperated by line):
-          textarea.form-control(rows='5', name='options', placeholder='', tabindex='2', required)
-        button#btnMakePoll.btn.btn-primary(type='submit', tabindex='3') Make!
+          .col-md-offset-8
+            button#btnMakePoll.btn.btn-block.btn-primary(type='submit', tabindex='3')
+              span.fa.fa-paper-plane
+              |  Send
 
 block append js
   script(src='/controllers/newpoll.client.js')
+  script.
+    let btnAddOption = document.getElementById('btn-add-option');
+    let optionContainer = document.getElementById('option-container');
+
+    let addOption = (e) => {
+      newAddButton()
+    }
+    let removeOption = (e) => {
+      optionContainer.removeChild(findAncestor(e.target, 'input-group'))
+      updateOptionsNumber();
+    }
+
+    btnAddOption.addEventListener('click', addOption);
+
+    function newAddButton(){
+      // Get last element (to replicate it later)
+      let lastGroupInput = optionContainer.lastChild;
+
+      // new element base on last child and replicating also its childs elements
+      let newOptionDiv = lastGroupInput.cloneNode(true);
+
+      // Setting new input...
+      let newInput = newOptionDiv.getElementsByClassName('input-with-option')[0];
+      newInput.value = "";
+      newInput.placeholder = "";
+
+      // Setting button 'add option'
+      let newBtnAdd = newOptionDiv.getElementsByTagName('BUTTON')[0];
+      newBtnAdd.addEventListener('click', addOption);
+
+      // Add new  option container
+      optionContainer.appendChild(newOptionDiv);
+
+      // focus on input to facilitate user tasks
+      newInput.focus();
+
+      // And button of the old option gets new behaviour (removing itself)
+      newRemoveButton(lastGroupInput.getElementsByTagName('BUTTON')[0]);
+
+      // Finally update each number of option
+      updateOptionsNumber();
+    }
+
+    function newRemoveButton(btn){
+      btn.classList.remove('btn-success');
+      btn.classList.add('btn-danger');
+      btn.lastChild.className = "fa fa-remove";
+      btn.removeEventListener('click', addOption);
+      btn.addEventListener('click', removeOption);
+    }
+
+    function updateOptionsNumber () {
+      let listSpanOptions = optionContainer.getElementsByClassName("nth-option")
+      for (let i=0; i<listSpanOptions.length; i++) {
+        listSpanOptions[i].textContent = i + 1;
+      }
+    }
+
+    function findAncestor (element, classToSearch) {
+      while ((element = element.parentElement) && !element.classList.contains(classToSearch));
+      return element;
+    }

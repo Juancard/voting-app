@@ -52,13 +52,23 @@
    let onSubmitPoll = (event) => {
      event.preventDefault(); // por default manda form derecho al server el muy negro
      let pollTitle = inputPollTitle.value;
-     let pollOptions = textAreaPollOptions.value.split("\n").filter(o => o != "");
+     let pollOptions = getPollOptions();
      if (isValidPollTitle(pollTitle) && areValidPollOptions(pollOptions)) {
+       console.log("se manda", pollTitle, pollOptions);
        sendPoll(pollTitle, pollOptions);
      }
    }
 
    form.addEventListener("submit", onSubmitPoll);
+
+   function getPollOptions(){
+     let pollOptionElements = document.getElementsByClassName("input-with-option");
+     let options = [];
+     for (let i=0; i<pollOptionElements.length; i++){
+       options.push(pollOptionElements[i].value);
+     }
+     return options.filter(o => o != "");
+   }
 
    ajaxFunctions.ready(function() {
      //nothing yet
