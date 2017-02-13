@@ -18,16 +18,16 @@ block html
           link(rel='stylesheet', href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css")
           // load fontawesome
           // END BOOTSTRAP
-  block body
-    .container
-      block navbar
-        include navbar.pug
-      block content
-      block js
-        // jQuery (necessary for Bootstrap's JavaScript plugins)
-        script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js')
-        // Include all compiled plugins (below), or include individual files as needed
-        script(src='/public/bootstrap/js/bootstrap.min.js')
-        script(type='text/javascript', src='/common/ajax-functions.js')
-      block footer
-        include footer.pug
+    block body
+      .container
+        block navbar
+          include navbar.pug
+        block content
+        block js
+          // jQuery (necessary for Bootstrap's JavaScript plugins)
+          script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js')
+          // Include all compiled plugins (below), or include individual files as needed
+          script(src='/public/bootstrap/js/bootstrap.min.js')
+          script(type='text/javascript', src='/common/ajax-functions.js')
+        block footer
+          include footer.pug
